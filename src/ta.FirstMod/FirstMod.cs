@@ -30,9 +30,11 @@ public class FirstMod : BaseUnityPlugin
 
         try
         {
-            _initialized = true;
-
             On.Player.Jump += PlayerOnJump;
+
+            Logger.LogInfo("ta.FirstMod initialized. BepInEx");
+            Debug.Log("ta.FirstMod initialized. Unity");
+            _initialized = true;
         }
         catch (Exception ex) { Logger.LogError(ex); }
     }
@@ -41,7 +43,7 @@ public class FirstMod : BaseUnityPlugin
     {
         orig(self);
         self.jumpBoost *= 4;
-        
+
         Logger.LogInfo("Jomp! BepInEx");
         Debug.Log("Jomp! Unity");
     }
