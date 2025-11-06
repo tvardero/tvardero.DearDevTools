@@ -3,8 +3,7 @@ publish-first-mod:
 	rm -rf ./dist/ta.FirstMod/
 	mkdir -p ./dist/ta.FirstMod/
 	mkdir -p ./dist/ta.FirstMod/plugins/
-	cp ./dist/src-ta.FirstMod/ta.FirstMod.dll ./dist/ta.FirstMod/plugins/
-	cp ./dist/src-ta.FirstMod/ta.FirstMod.pdb ./dist/ta.FirstMod/plugins/
+	cp -r ./dist/src-ta.FirstMod/* ./dist/ta.FirstMod/plugins/
 	cp ./src/ta.FirstMod/modinfo.json ./dist/ta.FirstMod/
 	cp ./src/ta.FirstMod/workshopdata.json ./dist/ta.FirstMod/
 	cp ./src/ta.FirstMod/thumbnail.png ./dist/ta.FirstMod/
