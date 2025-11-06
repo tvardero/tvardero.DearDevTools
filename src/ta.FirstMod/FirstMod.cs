@@ -23,15 +23,6 @@ public class FirstMod : BaseUnityPlugin
         On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
     }
 
-    private void PlayerOnUpdate(On.Player.orig_Update orig, Player self, bool eu)
-    {
-        orig(self, eu); //Always call original code, either before or after your code, depending on what you need to achieve
-
-        self.slugcatStats.runspeedFac += 0.01f;
-        Debug.Log($"Player {self.playerState.playerNumber} feels like zooming.");
-        Debug.Log($"Player {self.playerState.playerNumber}'s run speed: {self.slugcatStats.runspeedFac}");
-    }
-
     private void RainWorldOnOnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
     {
         orig(self);
@@ -41,9 +32,17 @@ public class FirstMod : BaseUnityPlugin
         {
             _initialized = true;
 
-            //Your hooks go here
-            On.Player.Update += PlayerOnUpdate;
+            On.Player.Jump += PlayerOnJump;
         }
         catch (Exception ex) { Logger.LogError(ex); }
+    }
+
+    private void PlayerOnJump(On.Player.orig_Jump orig, Player self)
+    {
+        orig(self);
+        self.jumpBoost *= 4;
+        
+        Logger.LogInfo("Jomp! BepInEx");
+        Debug.Log("Jomp! Unity");
     }
 }
