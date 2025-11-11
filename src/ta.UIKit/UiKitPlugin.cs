@@ -1,89 +1,135 @@
 ﻿using System;
-using System.Drawing;
+using System.Diagnostics;
 using BepInEx;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using ta.UIKit.Inputs;
+using ta.UIKit.Logging;
 using ta.UIKit.Nodes;
-using UnityEngine;
-using Color = UnityEngine.Color;
 
 namespace ta.UIKit;
 
 [BepInPlugin("ta.UIKit", "ta.UIKit", "0.0.1")]
 public class UiKitPlugin : BaseUnityPlugin
 {
-    private bool _initialized;
-    private ServiceLocator? _serviceLocator;
+    private readonly Stopwatch _drawSw = new();
+    private readonly Stopwatch _updateSw = new();
+    private ServiceProvider? _serviceProvider;
+
+    public static bool IsInitialized => Instance != null;
+
+    public static UiKitPlugin? Instance { get; private set; }
+
+    public static UtilReferences InstanceUtils => Instance?.Utils ?? throw new InvalidOperationException("UiKit is not initialized");
+
+    public UtilReferences Utils { get; private set; } = null!;
+
+    [UsedImplicitly]
+    public void Update()
+    {
+        if (!IsInitialized) return;
+
+        Utils.SceneManager.ProcessInputEvents();
+
+        TimeSpan elapsed = _updateSw.Elapsed;
+        _updateSw.Restart();
+
+        Utils.SceneManager.ProcessUpdate(elapsed);
+    }
 
     [UsedImplicitly]
     public void OnEnable()
     {
-        if (_initialized) return;
+        if (IsInitialized) return;
 
-        Logger.LogInfo("ta.UIKit initializing");
-
-        try
-        {
-            _serviceLocator = ServiceLocator.Instance;
-            Logger.LogInfo("ta.UIKit initialized");
-        }
-        catch (Exception e)
-        {
-            Logger.LogError($"Failed to initialize ta.UIKit: {e.Message} \n{e}");
-            throw;
-        }
-
-        _initialized = true;
-
-        On.RainWorld.OnModsInit += (orig, self) =>
-        {
-            orig(self);
-            Test();
-        };
+        RebuildServiceProvider();
+        Instance = this;
     }
 
     [UsedImplicitly]
     public void OnDisable()
     {
-        Logger.LogInfo("ta.UIKit de-initializing");
-
-        try { _serviceLocator?.Dispose(); }
-        catch (Exception e)
-        {
-            Logger.LogError($"Failed to dispose service locator: {e.Message}");
-            throw;
-        }
-
-        Logger.LogInfo("ta.UIKit de-initialized");
-        _initialized = false;
+        _serviceProvider?.Dispose();
+        Instance = null;
     }
 
-    private static void Test()
+    [UsedImplicitly]
+    public void OnPreRender()
     {
-        var fsprite = new FSprite("pixel");
-        fsprite.scaleX = 200;
-        fsprite.scaleY = 200;
-        fsprite.x = 200;
-        fsprite.y = 200;
-        fsprite.color = Color.red;
-        fsprite.isVisible = true;
-        Futile.stage.AddChild(fsprite);
+        if (!IsInitialized) return;
 
-        ServiceProvider serviceProvider = ServiceLocator.Instance.ServiceProvider;
+        TimeSpan elapsed = _drawSw.Elapsed;
+        _drawSw.Restart();
 
-        var nodeFactory = serviceProvider.GetRequiredService<NodeFactory>();
-        var sceneManager = serviceProvider.GetRequiredService<SceneManager>();
+        Utils.SceneManager.ProcessDraw(elapsed);
+    }
 
-        var rect = nodeFactory.Create<ColorRectangle>();
-        rect.Color = System.Drawing.Color.GreenYellow;
-        rect.Size = new Vector2(100, 100);
-        rect.LocalPosition = new Vector2(100, 100);
+    public static event Action<IServiceCollection>? OnConfigureServices;
 
-        var scene = nodeFactory.Create<SceneRootNode>();
-        scene.AddChild(rect);
+    public static void RebuildServiceProvider()
+    {
+        if (Instance == null) throw new InvalidOperationException("UiKit is not initialized");
 
-        sceneManager.SwitchScene(scene);
+        Instance.RebuildServiceProvider_Impl();
+    }
 
-        scene.ProcessDraw(TimeSpan.Zero);
+    private void RebuildServiceProvider_Impl()
+    {
+        _serviceProvider?.Dispose();
+
+        var collection = new ServiceCollection();
+
+        OnConfigureServices?.Invoke(collection);
+        ConfigureDefaultServices(collection);
+
+        _serviceProvider = collection.BuildServiceProvider();
+        Utils = new UtilReferences(_serviceProvider);
+
+        return;
+
+        static void ConfigureDefaultServices(IServiceCollection services)
+        {
+            services.AddLogging(loggingBuilder => loggingBuilder.AddBepInEx());
+
+            services.AddOptions<InputManagerOptions>();
+
+            services.AddSingleton<SceneManager>();
+            services.AddSingleton<InputManager>();
+            services.AddSingleton<InputEventPool>();
+            services.TryAddSingleton<NodeFactory>();
+            services.TryAddSingleton(typeof(NodeFactory<>), typeof(ServiceProviderNodeFactory<>));
+            services.TryAddTransient(typeof(NodePool<>));
+        }
+    }
+
+    public class UtilReferences
+    {
+        public SceneManager SceneManager { get; }
+
+        public ILoggerFactory LoggerFactory { get; }
+
+        public InputManager InputManager { get; }
+
+        public NodeFactory NodeFactory { get; }
+
+        public UtilReferences(IServiceProvider serviceProvider)
+        {
+            SceneManager = serviceProvider.GetRequiredService<SceneManager>();
+            LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            InputManager = serviceProvider.GetRequiredService<InputManager>();
+            NodeFactory = serviceProvider.GetRequiredService<NodeFactory>();
+        }
+
+        public ILogger<T> GetLogger<T>()
+        {
+            return LoggerFactory.CreateLogger<T>();
+        }
+        
+        public ILogger GetLogger(Type type)
+        {
+            return LoggerFactory.CreateLogger(type);
+        }
     }
 }

@@ -13,12 +13,12 @@ where TNode : Node
         _pool = new DefaultObjectPool<TNode>(policy);
     }
 
-    public TNode Get()
+    public virtual TNode Get()
     {
         return _pool.Get();
     }
 
-    public void Return(TNode obj)
+    public virtual void Return(TNode obj)
     {
         _pool.Return(obj);
     }

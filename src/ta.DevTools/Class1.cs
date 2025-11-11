@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ta.DevTools
+﻿namespace ta.DevTools
 {
     public class Class1 { }
 }

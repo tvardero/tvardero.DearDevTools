@@ -21,6 +21,9 @@
       <Private>false</Private>
       <HintPath>..\..\dll\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>..\..\dll\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

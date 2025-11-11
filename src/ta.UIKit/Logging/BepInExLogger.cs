@@ -33,17 +33,25 @@ public class BepInExLogger : ILogger
         if (!IsEnabled(logLevel)) return;
 
         BepInEx.Logging.LogLevel bepInExLogLevel = ToBepInExLogLevel(logLevel);
-        string? message = formatter(state, exception);
+        string message = FormatMessage(state, exception, formatter);
 
         _logSource.Log(bepInExLogLevel, message);
+    }
+
+    private static string FormatMessage<TState>(TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    {
+        string? message = formatter(state, exception);
+        if (exception != null) message += Environment.NewLine + exception;
+        return message;
     }
 
     private static BepInEx.Logging.LogLevel ToBepInExLogLevel(LogLevel logLevel)
     {
         return logLevel switch
         {
-            LogLevel.Trace or LogLevel.Debug => BepInEx.Logging.LogLevel.Debug,
-            LogLevel.Information => BepInEx.Logging.LogLevel.Info,
+            LogLevel.Trace => BepInEx.Logging.LogLevel.Debug,
+            LogLevel.Debug => BepInEx.Logging.LogLevel.Info,
+            LogLevel.Information => BepInEx.Logging.LogLevel.Message,
             LogLevel.Warning => BepInEx.Logging.LogLevel.Warning,
             LogLevel.Error => BepInEx.Logging.LogLevel.Error,
             LogLevel.Critical => BepInEx.Logging.LogLevel.Fatal,

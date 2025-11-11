@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Drawing;
 using Microsoft.Extensions.Logging;
+using UnityEngine;
 
 namespace ta.UIKit.Nodes;
 
@@ -30,7 +30,7 @@ public class ColorRectangle : AreaNode
         _sprite.y = LocalPosition.y;
         _sprite.scaleX = Size.x;
         _sprite.scaleY = Size.y;
-        _sprite.color = Color.ToUnityColor();
+        _sprite.color = Color;
         _sprite.isVisible = IsVisible;
     }
 

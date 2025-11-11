@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using ta.UIKit.InputEvents;
+using ta.UIKit.Inputs;
 
 namespace ta.UIKit.Nodes;
 
@@ -22,7 +22,7 @@ public class Node : IDisposable
 
         Name = thisType.Name + NodeTypeIndex;
         Children = _children.AsReadOnly();
-        Logger = logger ?? NullLogger<Node>.Instance;
+        Logger = logger ?? UiKitPlugin.Instance?.Utils.GetLogger(GetType()) ?? NullLogger<Node>.Instance;
     }
 
     public static long AllNodesCounter { get; private set; } = 1;
@@ -255,8 +255,7 @@ public class Node : IDisposable
 
     internal void ProcessDraw(TimeSpan deltaTime)
     {
-        ThrowIfDisposed();
-        ThrowIfNotInitialized();
+        if (IsDisposed) return;
 
         if (ShouldProcessDraw())
         {
@@ -269,8 +268,7 @@ public class Node : IDisposable
 
     internal void ProcessInputEvent(InputEvent inputEvent)
     {
-        ThrowIfDisposed();
-        ThrowIfNotInitialized();
+        if (IsDisposed) return;
 
         if (inputEvent == null) throw new ArgumentNullException(nameof(inputEvent));
 
@@ -306,8 +304,7 @@ public class Node : IDisposable
 
     internal void ProcessUpdate(TimeSpan deltaTime)
     {
-        ThrowIfDisposed();
-        ThrowIfNotInitialized();
+        if (IsDisposed) return;
 
         Node[] snapshot = GetChildrenSnapshot();
         for (int i = snapshot.Length - 1; i >= 0; i--)
@@ -323,20 +320,20 @@ public class Node : IDisposable
         }
     }
 
-    internal void PropagateSceneEnter()
+    internal void NotifySceneIsNowCurrent()
     {
         OnSceneEnter();
 
         Node[] snapshot = GetChildrenSnapshot();
-        foreach (Node child in snapshot) { child.PropagateSceneEnter(); }
+        foreach (Node child in snapshot) { child.NotifySceneIsNowCurrent(); }
     }
 
-    internal void PropagateSceneExit()
+    internal void NotifySceneNoLongerCurrent()
     {
         OnSceneExit();
 
         Node[] snapshot = GetChildrenSnapshot();
-        foreach (Node child in snapshot) { child.PropagateSceneExit(); }
+        foreach (Node child in snapshot) { child.NotifySceneNoLongerCurrent(); }
     }
 
     protected virtual void OnAttachedToParent(Node parent) { }

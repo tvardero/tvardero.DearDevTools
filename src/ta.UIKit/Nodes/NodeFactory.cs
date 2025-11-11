@@ -21,7 +21,7 @@ public class NodeFactory
         _serviceProvider = serviceProvider;
     }
 
-    public TNode Create<TNode>()
+    public virtual TNode Create<TNode>()
     where TNode : Node
     {
         return ResolveFactory<TNode>().Create();

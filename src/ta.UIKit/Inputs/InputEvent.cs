@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.ObjectPool;
 
-namespace ta.UIKit.InputEvents;
+namespace ta.UIKit.Inputs;
 
 public record InputEvent : IResettable
 {

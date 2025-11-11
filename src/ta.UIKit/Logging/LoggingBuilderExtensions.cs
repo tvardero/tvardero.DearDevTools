@@ -2,7 +2,7 @@
 
 namespace ta.UIKit.Logging;
 
-public static class LoggerBuilderExtensions
+public static class LoggingBuilderExtensions
 {
     public static void AddBepInEx(this ILoggingBuilder builder)
     {
