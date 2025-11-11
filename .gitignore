@@ -484,7 +484,7 @@ $RECYCLE.BIN/
 *.swp
 
 # RainWorld and Unity DLL files
-dll/
+thirdparty/
 
 # Publish output
 dist/
