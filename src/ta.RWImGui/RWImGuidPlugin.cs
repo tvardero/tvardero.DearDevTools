@@ -1,12 +1,32 @@
 ﻿using System;
+using BepInEx;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace ta.RWImGui;
 
-public class Class1 : BepInEx.BaseUnityPlugin
+[BepInPlugin("ta.RWImGUI", "ta.RWImGUI", "0.0.1")]
+public class RWImGUIPlugin : BaseUnityPlugin
 {
-    private void OnGUI()
+    private bool _enabled;
+
+    [UsedImplicitly]
+    public void OnEnable()
     {
+        _enabled = true;
+    }
+
+    [UsedImplicitly]
+    public void OnDisable()
+    {
+        _enabled = false;
+    }
+
+    [UsedImplicitly]
+    public void OnGUI()
+    {
+        if (!_enabled) return;
+        
         if (GUILayout.Button("Press Me")) { Debug.Log("Hello!"); }
     }
 }

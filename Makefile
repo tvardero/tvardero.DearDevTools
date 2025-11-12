@@ -1,10 +1,15 @@
-publish-uikit:
-	dotnet publish ./src/ta.UIKit/ --output dist/src-ta.UIKit
-	rm -rf ./dist/ta.UIKit/
-	mkdir -p ./dist/ta.UIKit/
-	mkdir -p ./dist/ta.UIKit/plugins/
-	cp -r ./dist/src-ta.UIKit/* ./dist/ta.UIKit/plugins/
-	cp ./src/ta.UIKit/modinfo.json ./dist/ta.UIKit/
-	cp ./src/ta.UIKit/workshopdata.json ./dist/ta.UIKit/
-	cp ./src/ta.UIKit/thumbnail.png ./dist/ta.UIKit/
-	rm -rf ./dist/src-ta.UIKit/
+publish-rwimgui:
+	make publish ta.RWImGui
+
+publish: $(project)
+	rm -rf dist/src-$(project)/
+	dotnet publish src/$(project) --output dist/src-$(project)/
+	mkdir -p dist/$(project)/
+	cp -r dist/src-$(project)/* dist/$(project)/plugins/
+	cp src/$(project)/modinfo.json dist/$(project) 
+	(cp src/$(project)/workshopdata.json dist/$(project) || exit 0)
+	(cp src/$(project)/thumbnail.png dist/$(project) || exit 0)
+	rm -rf ./dist/src-$(project)/
+	
+clean: 
+	rm -rf dist/
