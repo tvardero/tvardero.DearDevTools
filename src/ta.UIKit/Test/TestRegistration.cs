@@ -54,7 +54,7 @@ public class MyHelloNode : Node
         _deltaElapsed += deltaTime;
         if (_deltaElapsed > TimeSpan.FromSeconds(5))
         {
-            var message = _myService.GetHello();
+            string message = _myService.GetHello();
             Logger.LogInformation("Message from service: {Message}", message);
             _deltaElapsed = TimeSpan.Zero;
         }

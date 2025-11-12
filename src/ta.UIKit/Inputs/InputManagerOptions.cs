@@ -9,6 +9,7 @@ public class InputManagerOptions : IOptions<InputManagerOptions>
     public bool ShouldProduceEchoForKeyboard { get; set; } = false;
 
     public bool ShouldProduceEchoForMouseButton { get; set; } = false;
+
     public bool ShouldProduceEchoForJoystickButton { get; set; } = false;
 
     InputManagerOptions IOptions<InputManagerOptions>.Value => this;

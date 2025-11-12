@@ -62,6 +62,11 @@ public class InputManager
         _inputEventPool.Return(inputEvent);
     }
 
+    private static bool IsHandledByGame(InputEvent inputEvent)
+    {
+        return false; // TODO
+    }
+
     private void CollectKeyCodeEvents()
     {
         // "up" events
@@ -93,18 +98,6 @@ public class InputManager
         }
     }
 
-    private bool ShouldProduceEchoForKeyCode(KeyCode keyCode)
-    {
-        return keyCode switch
-        {
-            KeyCode.None => false,
-            <= KeyCode.Menu => _options.ShouldProduceEchoForKeyboard,
-            <= KeyCode.Mouse6 => _options.ShouldProduceEchoForMouseButton,
-            <= KeyCode.Joystick8Button19 => _options.ShouldProduceEchoForJoystickButton,
-            _ => false,
-        };
-    }
-
     private void CollectMouseMotionEvent()
     {
         Vector3 mousePosition3D = Input.mousePosition;
@@ -129,8 +122,15 @@ public class InputManager
         };
     }
 
-    private static bool IsHandledByGame(InputEvent inputEvent)
+    private bool ShouldProduceEchoForKeyCode(KeyCode keyCode)
     {
-        return false; // TODO
+        return keyCode switch
+        {
+            KeyCode.None => false,
+            <= KeyCode.Menu => _options.ShouldProduceEchoForKeyboard,
+            <= KeyCode.Mouse6 => _options.ShouldProduceEchoForMouseButton,
+            <= KeyCode.Joystick8Button19 => _options.ShouldProduceEchoForJoystickButton,
+            _ => false,
+        };
     }
 }

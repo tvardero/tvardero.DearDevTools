@@ -7,6 +7,13 @@ public class InputEventPool
 {
     private readonly Dictionary<Type, object> _pools = new();
 
+    public JoystickButtonPressInputEvent GetJoystickButtonPressInputEvent(KeyCode keyCode, bool isDown, bool isEcho)
+    {
+        var inputEvent = Get<JoystickButtonPressInputEvent>();
+        inputEvent.Set(keyCode, isDown, isEcho);
+        return inputEvent;
+    }
+
     public KeyboardKeyInputEvent GetKeyboardKeyInputEvent(KeyCode keyCode, bool isDown, bool isEcho)
     {
         var inputEvent = Get<KeyboardKeyInputEvent>();
@@ -25,13 +32,6 @@ public class InputEventPool
     {
         var inputEvent = Get<MouseMotionInputEvent>();
         inputEvent.Set(relativePosition, currentPosition);
-        return inputEvent;
-    }
-
-    public JoystickButtonPressInputEvent GetJoystickButtonPressInputEvent(KeyCode keyCode, bool isDown, bool isEcho)
-    {
-        var inputEvent = Get<JoystickButtonPressInputEvent>();
-        inputEvent.Set(keyCode, isDown, isEcho);
         return inputEvent;
     }
 

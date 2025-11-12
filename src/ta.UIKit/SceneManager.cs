@@ -14,6 +14,12 @@ public class SceneManager : IDisposable
 
     public SceneRootNode? CurrentScene { get; private set; }
 
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        CurrentScene?.Dispose();
+    }
+
     public void ProcessDraw(TimeSpan elapsed)
     {
         CurrentScene?.ProcessDraw(elapsed);
@@ -39,11 +45,5 @@ public class SceneManager : IDisposable
         CurrentScene?.NotifySceneNoLongerCurrent();
         CurrentScene = scene;
         CurrentScene?.NotifySceneIsNowCurrent();
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        CurrentScene?.Dispose();
     }
 }

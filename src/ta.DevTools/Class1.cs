@@ -1,4 +1,3 @@
-﻿namespace ta.DevTools
-{
-    public class Class1 { }
-}
+﻿namespace ta.DevTools;
+
+public class Class1 { }

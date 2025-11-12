@@ -1,3 +1,3 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using ta.ModMaker.Windows;
 
-Console.WriteLine("Hello, World!");
+DemoWindow.Create().Run();

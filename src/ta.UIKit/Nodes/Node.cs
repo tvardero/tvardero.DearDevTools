@@ -251,6 +251,22 @@ public class Node : IDisposable
         IsPaused = false;
     }
 
+    internal void NotifySceneIsNowCurrent()
+    {
+        OnSceneEnter();
+
+        Node[] snapshot = GetChildrenSnapshot();
+        foreach (Node child in snapshot) { child.NotifySceneIsNowCurrent(); }
+    }
+
+    internal void NotifySceneNoLongerCurrent()
+    {
+        OnSceneExit();
+
+        Node[] snapshot = GetChildrenSnapshot();
+        foreach (Node child in snapshot) { child.NotifySceneNoLongerCurrent(); }
+    }
+
     internal void ProcessDraw(TimeSpan deltaTime)
     {
         if (IsDisposed) return;
@@ -316,22 +332,6 @@ public class Node : IDisposable
             try { OnUpdate(deltaTime); }
             catch (Exception e) { Logger.LogError(e, "Error while updating node '{Node}': {Message}", this, e.Message); }
         }
-    }
-
-    internal void NotifySceneIsNowCurrent()
-    {
-        OnSceneEnter();
-
-        Node[] snapshot = GetChildrenSnapshot();
-        foreach (Node child in snapshot) { child.NotifySceneIsNowCurrent(); }
-    }
-
-    internal void NotifySceneNoLongerCurrent()
-    {
-        OnSceneExit();
-
-        Node[] snapshot = GetChildrenSnapshot();
-        foreach (Node child in snapshot) { child.NotifySceneNoLongerCurrent(); }
     }
 
     protected virtual void OnAttachedToParent(Node parent) { }

@@ -105,14 +105,6 @@ public class UiKitPlugin : BaseUnityPlugin
 
     public class UtilReferences
     {
-        public SceneManager SceneManager { get; }
-
-        public ILoggerFactory LoggerFactory { get; }
-
-        public InputManager InputManager { get; }
-
-        public NodeFactory NodeFactory { get; }
-
         public UtilReferences(IServiceProvider serviceProvider)
         {
             SceneManager = serviceProvider.GetRequiredService<SceneManager>();
@@ -121,11 +113,19 @@ public class UiKitPlugin : BaseUnityPlugin
             NodeFactory = serviceProvider.GetRequiredService<NodeFactory>();
         }
 
+        public SceneManager SceneManager { get; }
+
+        public ILoggerFactory LoggerFactory { get; }
+
+        public InputManager InputManager { get; }
+
+        public NodeFactory NodeFactory { get; }
+
         public ILogger<T> GetLogger<T>()
         {
             return LoggerFactory.CreateLogger<T>();
         }
-        
+
         public ILogger GetLogger(Type type)
         {
             return LoggerFactory.CreateLogger(type);
