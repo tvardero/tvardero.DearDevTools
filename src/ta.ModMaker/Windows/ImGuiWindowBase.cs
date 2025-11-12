@@ -63,7 +63,7 @@ public abstract class ImGuiWindowBase : IDisposable
         Dispose();
     }
 
-    protected void OnDispose() { }
+    protected virtual void OnDispose() { }
 
     protected abstract void OnImGuiRender(double frameTime);
 
