@@ -1,7 +1,4 @@
 ﻿<Project>
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-  </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="ImGui.NET" Version="1.91.6.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />

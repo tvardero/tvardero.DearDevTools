@@ -2,7 +2,7 @@
 
 ## ta.ModMaker
 
-## ta.UiKit
+## ta.RWImGui
 
 ### Build
 
@@ -29,16 +29,11 @@ Steps:
 
 Requires that you have copied all `.dll` files from RainWorld installation folder to `thirdparty/` folder in repository. See the [build](#build) section for details.
 
-Prerequsites:
-
-- "Git Bash" or any other terminal with Linux commands installed (f.e. WSL)
-- "Make" tool installed and available from Git Bash
-
 Steps:
 
-1. Run Git Bash or any other terminal with Linux commands
-2. Run `make publish-uikit`
-3. Mod is at `/dist/ta.UiKit`, ready to be zipped
+1. Run `dotnet tool restore` (only once you clone the repository)
+2. Run `dotnet cake --target Publish-RWImGui`
+3. Mod is at `/dist/ta.RWImGui`, ready to be zipped
 
 ## License
 

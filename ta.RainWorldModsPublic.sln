@@ -5,13 +5,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_sln_root", "_sln_root", "{D308496E-84AE-4794-AE01-72C14C51BB54}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		Directory.Build.props = Directory.Build.props
 		global.json = global.json
 		README.md = README.md
-		Makefile = Makefile
 		LICENSE = LICENSE
 		.editorconfig = .editorconfig
-		Directory.Packages.props = Directory.Packages.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ta.ModMaker", "src\ta.ModMaker\ta.ModMaker.csproj", "{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}"
@@ -24,10 +21,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0C626C51-3219-4404-9B5C-2CB70EB9BF72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0C626C51-3219-4404-9B5C-2CB70EB9BF72}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0C626C51-3219-4404-9B5C-2CB70EB9BF72}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0C626C51-3219-4404-9B5C-2CB70EB9BF72}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -38,7 +31,6 @@ Global
 		{9A6E1838-8B3B-4E1D-9EC0-BC5BC03088C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{0C626C51-3219-4404-9B5C-2CB70EB9BF72} = {9DF0903F-36DE-4F71-BE60-E43A7F8C5D91}
 		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12} = {9DF0903F-36DE-4F71-BE60-E43A7F8C5D91}
 		{9A6E1838-8B3B-4E1D-9EC0-BC5BC03088C3} = {9DF0903F-36DE-4F71-BE60-E43A7F8C5D91}
 	EndGlobalSection

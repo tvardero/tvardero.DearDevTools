@@ -26,15 +26,10 @@
       <Private>false</Private>
       <HintPath>..\..\thirdparty\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\thirdparty\UnityEngine.IMGUIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.InputModule">
-      <HintPath>..\..\thirdparty\UnityEngine.InputLegacyModule.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ImGui.NET" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 

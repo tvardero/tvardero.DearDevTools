@@ -85,11 +85,4 @@ Task("Publish-RWImGui")
     RunTarget("Publish");
 });
 
-Task("Default")
-    .Does(() =>
-{
-    project = "ta.RWImGui";
-    RunTarget("Publish");
-});
-
 RunTarget(target);
