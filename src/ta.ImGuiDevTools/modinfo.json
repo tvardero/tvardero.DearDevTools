@@ -1,0 +1,10 @@
+﻿{
+  "id": "ta.ImGuiDevTools",
+  "name": "Dear Dev Tools",
+  "version": "0.0.1",
+  "authors": "tvardero",
+  "description": "Dev Tools rewritten in Dear ImGui, with few additional features.",
+  "requirements": ["rwimgui"],
+  "requirements_names": ["Rain World ImGUI API"],
+  "checksum_override_version": false
+}

@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <Private>false</Private>
+      <HintPath>..\..\thirdparty\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="ImGui.NET">
+      <Private>false</Private>
+      <HintPath>..\..\thirdparty\ImGui.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="rain-world-imgui-api">
+      <Private>false</Private>
+      <HintPath>..\..\thirdparty\rain-world-imgui-api.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <Private>false</Private>
+      <HintPath>..\..\thirdparty\PUBLIC-Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="HOOKS-Assembly-CSharp">
+      <Private>false</Private>
+      <HintPath>..\..\thirdparty\HOOKS-Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <Private>false</Private>
+      <HintPath>..\..\thirdparty\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <Private>false</Private>
+      <HintPath>..\..\thirdparty\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

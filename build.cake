@@ -1,5 +1,5 @@
 var target = Argument("target", "Default");
-var project = Argument("project", "ta.RWImGui");
+var project = Argument("project", "ta.ImGuiDevTools");
 var distDirectory = Directory("./dist");
 var srcDirectory = Directory("./src");
 var projectPath = srcDirectory + Directory(project);
@@ -78,11 +78,17 @@ Task("Publish")
     }
 });
 
-Task("Publish-RWImGui")
+Task("Publish-ImGuiDevTools")
     .Does(() =>
 {
-    project = "ta.RWImGui";
+    project = "ta.ImGuiDevTools";
     RunTarget("Publish");
+});
+
+Task("Default")
+    .Does(() =>
+{
+    RunTarget("Publish-ImGuiDevTools");
 });
 
 RunTarget(target);
