@@ -3,16 +3,14 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-  </PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ImGui.NET" />
-    <PackageReference Include="NativeFileDialogSharp" />
-    <PackageReference Include="Silk.NET.Input" />
-    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" />
-    <PackageReference Include="Silk.NET.Windowing" />
+    <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
+    <PackageReference Include="NativeFileDialogSharp" Version="0.5.0" />
+    <PackageReference Include="Silk.NET.Input" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
   </ItemGroup>
 
   <ItemGroup>
