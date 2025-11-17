@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_sln_root", "_sln_root", "{
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tvardero.ModMaker", "src\tvardero.ModMaker\tvardero.ModMaker.csproj", "{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tvardero.DearDevTools", "src\tvardero.DearDevTools\tvardero.DearDevTools.csproj", "{65C7BAD5-10BC-47BB-9DDD-AD1E48495088}"
 EndProject
 Global
@@ -23,17 +21,12 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12}.Release|Any CPU.Build.0 = Release|Any CPU
 		{65C7BAD5-10BC-47BB-9DDD-AD1E48495088}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{65C7BAD5-10BC-47BB-9DDD-AD1E48495088}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65C7BAD5-10BC-47BB-9DDD-AD1E48495088}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65C7BAD5-10BC-47BB-9DDD-AD1E48495088}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{A74F5646-2D7D-4D68-911E-17DD0FE9BD12} = {9DF0903F-36DE-4F71-BE60-E43A7F8C5D91}
 		{65C7BAD5-10BC-47BB-9DDD-AD1E48495088} = {9DF0903F-36DE-4F71-BE60-E43A7F8C5D91}
 	EndGlobalSection
 EndGlobal
