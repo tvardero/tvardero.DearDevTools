@@ -18,7 +18,7 @@ public class DearDevToolsImGuiContext : IMGUIContext
     }
 
     /// <inheritdoc />
-    public override void Render(ref IntPtr idxgiSwapChain, ref uint syncInterval, ref uint flags)
+    public override void Render(ref IntPtr IDXGISwapChain, ref uint SyncInterval, ref uint Flags)
     {
         _dearDevTools.Draw();
     }
