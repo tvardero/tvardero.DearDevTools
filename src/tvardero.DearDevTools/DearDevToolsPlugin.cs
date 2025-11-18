@@ -1,81 +1,102 @@
 ﻿using BepInEx;
-using JetBrains.Annotations;
-using RWIMGUI.API;
+using tvardero.DearDevTools.Internal;
 
 namespace tvardero.DearDevTools;
 
+/// <summary>
+/// Dear Dev Tools mod.
+/// </summary>
 [BepInPlugin("tvardero.DearDevTools", "Dear Dev Tools", "0.0.4")]
 [BepInDependency("rwimgui")]
 public sealed class DearDevToolsPlugin : BaseUnityPlugin
 {
-    private static bool _imguiApiCallbacksRegistered;
     private static DearDevToolsPlugin? _instance;
-    private DearDevTools _dearDevTools = null!;
-    private DearDevToolsImGuiContext _imguiContext = null!;
 
+    /// <summary>
+    /// Singleton instance of fully initialized Dear Dev Tools mod.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"> Dear Dev Tools mod is not initialized. </exception>
+    public static DearDevToolsPlugin Instance => _instance ?? throw new InvalidOperationException("Dear Dev Tools mod is not initialized");
+
+    /// <summary>
+    /// Is Dear Dev Tools mod initialized.
+    /// </summary>
     public static bool IsInitialized => _instance != null;
 
-    public static DearDevToolsPlugin Instance => _instance ?? throw new InvalidOperationException("Plugin not initialized");
+    internal ModContext ModContext { get; private set; } = null!;
 
-    [UsedImplicitly]
-    public void Awake()
+    /// <summary>
+    /// Enable quick tools.
+    /// </summary>
+    public void EnableQuickTools()
     {
-        if (IsInitialized) return;
+        ModContext.QuickToolsEnabled = true;
+    }
 
+    /// <summary>
+    /// Disable quick tools.
+    /// </summary>
+    public void DisableQuickTools()
+    {
+        ModContext.QuickToolsEnabled = false;
+    }
+
+    /// <summary>
+    /// Toggle quick tools.
+    /// </summary>
+    /// <param name="state"> Optional parameter to directly specify the state. </param>
+    public void ToggleQuickTools(bool? state = null)
+    {
+        ModContext.QuickToolsEnabled = state ?? !ModContext.QuickToolsEnabled;
+    }
+
+    /// <summary>
+    /// Show Dear Dev Tools main UI.
+    /// </summary>
+    public void ShowMainUi()
+    {
+        ModContext.MainUiVisible = true;
+    }
+
+    /// <summary>
+    /// Hide Dear Dev Tools main UI.
+    /// </summary>
+    public void HideMainUi()
+    {
+        ModContext.MainUiVisible = false;
+    }
+
+    /// <summary>
+    /// Toggle Dear Dev Tools main UI.
+    /// </summary>
+    /// <param name="state"> Optional parameter to directly specify the state. </param>
+    public void ToggleMainUi(bool? state = null)
+    {
+        ModContext.MainUiVisible = state ?? !ModContext.MainUiVisible;
+    }
+
+    private void OnEnable()
+    {
         On.RainWorld.OnModsInit += OnModsInit;
+    }
+
+    private void OnDisable()
+    {
+        On.RainWorld.OnModsInit -= OnModsInit;
+
+        if (_instance != this) return;
+
+        _instance = null;
+        ModContext.Dispose();
     }
 
     private void OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
     {
         orig(self);
 
-        if (IsInitialized) return;
+        if (_instance == this) return;
 
-        Logger.LogInfo("Initializing tvardero.DearDevTools");
-
-        _dearDevTools = new DearDevTools();
-        _imguiContext = new DearDevToolsImGuiContext(_dearDevTools);
-
-        if (!_imguiApiCallbacksRegistered)
-        {
-            unsafe { ImGUIAPI.AddOnWindowCloseCallback(&OnImGUIApiMenuClose); }
-
-            _imguiApiCallbacksRegistered = true;
-        }
-
+        ModContext = ModContext.Create();
         _instance = this;
-        Logger.LogInfo("Initialized tvardero.DearDevTools");
-    }
-
-    private static void OnImGUIApiMenuClose()
-    {
-        // TODO: this is bad, need to use keybinds
-        if (IsInitialized && ImGUIAPI.CurrentContext != Instance._imguiContext) { ImGUIAPI.SwitchContext(Instance._imguiContext); }
-    }
-
-    [UsedImplicitly]
-    private void OnDisable()
-    {
-        if (!IsInitialized) return;
-
-        Logger.LogInfo("Deinitializing tvardero.DearDevTools");
-
-        _instance = null;
-
-        if (ImGUIAPI.CurrentContext == _imguiContext) ImGUIAPI.SwitchContext(null);
-
-        _imguiContext = null!;
-        _dearDevTools = null!;
-
-        On.RainWorld.OnModsInit -= OnModsInit;
-
-        if (_imguiApiCallbacksRegistered)
-        {
-            unsafe { ImGUIAPI.RemoveOnWindowCloseCallback(&OnImGUIApiMenuClose); }
-
-            _imguiApiCallbacksRegistered = false;
-        }
-
-        Logger.LogInfo("Deinitialized tvardero.DearDevTools");
     }
 }

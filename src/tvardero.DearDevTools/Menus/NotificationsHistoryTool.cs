@@ -1,3 +1,3 @@
-﻿namespace tvardero.DearDevTools.Tools;
+﻿namespace tvardero.DearDevTools.Menus;
 
 public class NotificationsHistoryTool { }

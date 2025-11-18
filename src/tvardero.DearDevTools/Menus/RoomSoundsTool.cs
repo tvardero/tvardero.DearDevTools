@@ -1,5 +1,3 @@
 ﻿namespace tvardero.DearDevTools.Menus;
 
-public class ModEditorMenu 
-{
-}
+public class RoomSoundsTool { }

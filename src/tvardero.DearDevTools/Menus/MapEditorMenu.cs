@@ -1,11 +1,20 @@
-﻿using tvardero.DearDevTools.Abstractions;
+﻿using tvardero.DearDevTools.Components;
 
 namespace tvardero.DearDevTools.Menus;
 
-public class MapEditorMenu : ImGuiMenuBase
+public class MapEditorMenu : ImGuiDrawableBase
 {
+    private bool _isVisible;
+
     /// <inheritdoc />
-    public override string MenuName => "Map Editor";
+    public override bool IsVisible
+    {
+        get => _isVisible;
+        set => _isVisible = value;
+    }
+
+    /// <inheritdoc />
+    public override bool IsBlockingRWInput => true;
 
     /// <inheritdoc />
     protected override void OnDraw()
@@ -15,7 +24,9 @@ public class MapEditorMenu : ImGuiMenuBase
         ImGui.SetNextWindowPos(viewport.WorkPos);
         ImGui.SetNextWindowSize(viewport.WorkSize);
 
-        ImGui.Begin(MenuName, ref _isEnabled, ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings);
+        ImGui.Begin("Map editor", ref _isVisible, ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings);
+
+        // todo
 
         ImGui.End();
     }

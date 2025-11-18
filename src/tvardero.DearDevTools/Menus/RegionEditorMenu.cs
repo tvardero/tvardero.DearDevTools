@@ -1,12 +1,5 @@
-﻿using tvardero.DearDevTools.Abstractions;
+﻿namespace tvardero.DearDevTools.Menus;
 
-namespace tvardero.DearDevTools.Menus;
-
-public class RegionEditorMenu : SimpleWindowMenuBase
+public class RegionEditorMenu 
 {
-    /// <inheritdoc />
-    public override string MenuName => "Region editor";
-
-    /// <inheritdoc />
-    protected override void OnDrawContent() { }
 }
