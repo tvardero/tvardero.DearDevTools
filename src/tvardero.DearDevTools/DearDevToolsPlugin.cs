@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using tvardero.DearDevTools.Components;
 using tvardero.DearDevTools.Internal;
+using tvardero.DearDevTools.Menus;
 using UnityEngine;
 
 namespace tvardero.DearDevTools;
@@ -60,20 +61,32 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         bool hPressed = Input.GetKeyDown(KeyCode.H);
         bool oPressed = Input.GetKeyDown(KeyCode.O);
 
-        if (ctrlPressed && hPressed) ShowMainUi(!IsMainUiVisible);
+        if (ctrlPressed && hPressed)
+        {
+            Logger.LogInfo("Ctrl+H");
+            ShowMainUi(!IsMainUiVisible);
+        }
 
-        if (ctrlPressed && oPressed) EnableQuickTools(!AreQuickToolsEnabled);
+        if (ctrlPressed && oPressed)
+        {
+            Logger.LogInfo("Ctrl+O");
+            EnableQuickTools(!AreQuickToolsEnabled);
+        }
     }
 
     [UsedImplicitly]
     private void OnEnable()
     {
+        Logger.LogInfo("OnEnable called, registering initialization callback");
+
         On.RainWorld.OnModsInit += OnModsInit;
     }
 
     [UsedImplicitly]
     private void OnDisable()
     {
+        Logger.LogInfo("OnDisable called, deinitializing mod instance");
+
         On.RainWorld.OnModsInit -= OnModsInit;
 
         if (_instance != this) return;
@@ -85,6 +98,8 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        Logger.LogInfo("Dispose called, deinitializing mod instance");
+
         _imGuiContext.Dispose();
     }
 
@@ -128,17 +143,21 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     {
         IsMainUiVisible = show;
         OnMainUiVisibleChange?.Invoke(show);
+        if (show) _imGuiContext.Activate();
     }
 
     private void OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
     {
         orig(self);
 
+        Logger.LogInfo("Initializing mod instance");
+
         if (_instance == this) return;
 
         _imGuiContext = new ModImGuiContext(this);
         RenderList = _imGuiContext.RenderList.AsReadOnly();
 
+        RegisterImGuiDrawable(mod => new TestMenu(mod));
         RecreateImGuiDrawablesInContext();
 
         _instance = this;
@@ -151,6 +170,8 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     /// <param name="drawable"> Drawable instance. </param>
     public void RegisterImGuiDrawable(ImGuiDrawableBase drawable)
     {
+        Logger.LogInfo("Registering drawable instance: " + drawable.GetType().FullName);
+
         RegisterImGuiDrawable(_ => drawable);
     }
 
@@ -161,6 +182,8 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     /// <param name="drawableFactory"> Factory that accepts active Dear Dev Tools plugin instance and returns drawable instance. </param>
     public void RegisterImGuiDrawable(Func<DearDevToolsPlugin, ImGuiDrawableBase> drawableFactory)
     {
+        Logger.LogInfo("Registering drawable factory");
+
         _registeredDrawables.Add(drawableFactory);
     }
 
@@ -169,10 +192,17 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     /// </summary>
     public void RecreateImGuiDrawablesInContext()
     {
+        Logger.LogInfo("Recreating drawables list");
+
         IEnumerable<ImGuiDrawableBase?> drawablesToRegister = _registeredDrawables
             .Select(factory =>
             {
-                try { return factory(this); }
+                try
+                {
+                    var drawable = factory(this);
+                    Logger.LogInfo("Created drawable: " + drawable.GetType().FullName);
+                    return drawable;
+                }
                 catch (Exception e)
                 {
                     Logger.LogError("Failed to create ImGui drawable\n" + e.Message);
