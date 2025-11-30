@@ -41,3 +41,7 @@ Steps:
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 For imported third-party components - see the [THIRD-PARTY-LICENSES](THIRD-PARTY-LICENSES.md) file for details.
+
+## Support development
+
+https://ko-fi.com/tvardero

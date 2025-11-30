@@ -8,7 +8,7 @@ namespace tvardero.DearDevTools;
 /// <summary>
 /// Dear Dev Tools mod.
 /// </summary>
-[BepInPlugin("tvardero.DearDevTools", "Dear Dev Tools", "0.0.5")]
+[BepInPlugin("tvardero.DearDevTools", "Dear Dev Tools", "0.0.6")]
 [BepInDependency("rwimgui")]
 public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 {
@@ -144,7 +144,6 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         _modImGuiContext = new ModImGuiContext(this);
         _modImGuiContext.RenderList.Add(new DearDevToolsEnabledTooltip());
         _modImGuiContext.RenderList.Add(new MainMenuBar());
-        _modImGuiContext.RenderList.Add(new TestMenu());
 
         _instance = this;
     }
