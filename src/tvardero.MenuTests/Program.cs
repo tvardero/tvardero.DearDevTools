@@ -99,6 +99,6 @@ void OnRenderImgui()
 {
     ImGui.ShowDemoWindow();
 
-    if (testSubject is { IsVisible: true }) testSubject.Draw();
-    else window.Close();
+    if (!testSubject.IsOpen) window.Close();
+    else testSubject.Draw();
 }

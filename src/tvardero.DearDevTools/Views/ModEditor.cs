@@ -1,14 +1,14 @@
 ﻿using tvardero.DearDevTools.Components;
 using tvardero.DearDevTools.Models;
 
-namespace tvardero.DearDevTools.Menus;
+namespace tvardero.DearDevTools.Views;
 
 // TODO
 public class ModEditor : ImGuiWindowWithLeftPanelBase
 {
-    private readonly SortedSet<ModInfo> _coreMods = new(Comparer<ModInfo>.Create((x, y) => string.CompareOrdinal(x.Id, y.Id)));
-    private readonly SortedSet<ModInfo> _userMods = new(Comparer<ModInfo>.Create((x, y) => string.CompareOrdinal(x.Id, y.Id)));
-    private readonly SortedSet<ModInfo> _steamWorkshopMods = new(Comparer<ModInfo>.Create((x, y) => string.CompareOrdinal(x.Id, y.Id)));
+    private readonly SortedSet<ModModel> _coreMods = new(Comparer<ModModel>.Create((x, y) => string.CompareOrdinal(x.Id, y.Id)));
+    private readonly SortedSet<ModModel> _userMods = new(Comparer<ModModel>.Create((x, y) => string.CompareOrdinal(x.Id, y.Id)));
+    private readonly SortedSet<ModModel> _steamWorkshopMods = new(Comparer<ModModel>.Create((x, y) => string.CompareOrdinal(x.Id, y.Id)));
     private string? _selectedModId;
 
     /// <inheritdoc />
@@ -57,9 +57,9 @@ public class ModEditor : ImGuiWindowWithLeftPanelBase
 
         return;
 
-        void ListMods(IEnumerable<ModInfo> mods)
+        void ListMods(IEnumerable<ModModel> mods)
         {
-            foreach (ModInfo? mod in mods) { ImGui.Selectable(mod.Name + "##" + mod.Id, mod.Id == _selectedModId); }
+            foreach (ModModel? mod in mods) { ImGui.Selectable(mod.Name + "##" + mod.Id, mod.Id == _selectedModId); }
         }
     }
 

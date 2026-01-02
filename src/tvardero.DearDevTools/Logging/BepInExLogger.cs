@@ -4,7 +4,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace tvardero.DearDevTools.Logging;
 
-internal sealed class BepInExLogger : ILogger, IDisposable
+public sealed class BepInExLogger : ILogger, IDisposable
 {
     private readonly Func<LogLevel> _minimumLogLevelEval;
     private readonly ManualLogSource _mls;
@@ -31,6 +31,7 @@ internal sealed class BepInExLogger : ILogger, IDisposable
     public void Dispose()
     {
         _mls.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     /// <inheritdoc />
@@ -48,6 +49,7 @@ internal sealed class BepInExLogger : ILogger, IDisposable
         Func<TState, Exception?, string> formatter)
     {
         BepInEx.Logging.LogLevel matchedLevel = MatchLogLevel(logLevel);
+
         string? message = formatter(state, exception);
         if (exception != null) message += $"\n{exception}";
 

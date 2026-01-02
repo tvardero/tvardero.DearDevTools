@@ -1,10 +1,14 @@
 ﻿using BepInEx;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using RWCustom;
+using tvardero.DearDevTools.Internal;
 using tvardero.DearDevTools.Logging;
-using tvardero.DearDevTools.Menus;
 using tvardero.DearDevTools.Services;
+using tvardero.DearDevTools.Util;
+using tvardero.DearDevTools.Views;
 using UnityEngine;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -22,6 +26,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     private static bool _skipOnModsInit;
     private static readonly List<Action<IServiceCollection>> _configureServiceCollection = [];
     private static readonly List<Action<IServiceProvider>> _configureServiceProvider = [];
+    private readonly Eventer _updateEvent = new();
     private EndEscaperService _endEscaperService = null!;
     private MenuManager _menuManager = null!;
     private ModImGuiContext _modImGuiContext = null!;
@@ -46,8 +51,14 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 
     public new ILogger Logger { get; }
 
-    /// <summary> Main UI visible. Includes main menu bar, room info panel, room settings panel, and others by default. </summary>
-    /// <remarks> Settings this to true will set <see cref="AreDearDevToolsActive" /> to true as well automatically. </remarks>
+    /// <summary>
+    /// Main UI visible. Includes main menu bar, many menus and tools like room info panel, room settings panel and others.
+    /// Pinned menus and tools will remain to be visible while <see cref="AreDearDevToolsActive" /> is true.<br />
+    /// Mouse cursor will be visible as well when <see cref="IsMainUiVisible" /> is true and hidden when false.
+    /// </summary>
+    /// <remarks>
+    /// Setting this to true will automatically set <see cref="AreDearDevToolsActive" /> to true as well.
+    /// </remarks>
     public bool IsMainUiVisible
     {
         get => field && AreDearDevToolsActive;
@@ -56,17 +67,24 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         {
             if (value == field) return;
 
-            if (value) AreDearDevToolsActive = true;
             field = value;
 
-            if (value) _modImGuiContext.Activate();
+            if (value)
+            {
+                AreDearDevToolsActive = true;
+                _modImGuiContext.Activate();
+            }
+
+            ShowMouseCursor(value);
         }
     }
 
     /// <summary>
-    /// Quick tools enabled. Includes many utils like 'reset rain timer', 'teleport player', 'kill all creatures' and others by default.
+    /// Quick tools enabled. Includes many utils like 'reset rain timer', 'teleport player', 'kill all creatures' and others.
     /// </summary>
-    /// <remarks> Setting this to false will set <see cref="IsMainUiVisible" /> to false automatically. </remarks>
+    /// <remarks>
+    /// Setting this to false will automatically set <see cref="IsMainUiVisible" /> to false.
+    /// </remarks>
     public bool AreDearDevToolsActive
     {
         get => field || IsMainUiVisible;
@@ -102,27 +120,38 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     {
         if (_instance != this) return;
 
-        // todo: make configurable
+        try { _updateEvent.Fire(); }
+        catch (Exception e) { Logger.LogWarning(e, "Some update handler failed"); }
 
+        // todo: make shortcuts configurable
         bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        bool altJustPressed = Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt);
         bool escPressed = Input.GetKey(KeyCode.Escape);
         bool endPressed = Input.GetKey(KeyCode.End);
-        bool hPressed = Input.GetKeyDown(KeyCode.H);
-        bool oPressed = Input.GetKeyDown(KeyCode.O);
+        bool hJustPressed = Input.GetKeyDown(KeyCode.H);
+        bool oJustPressed = Input.GetKeyDown(KeyCode.O);
+
+        bool switchedCursorVisibility = false;
 
         if (escPressed && endPressed) _endEscaperService.EscapeTheEnd();
 
-        if (ctrlPressed && oPressed)
+        if (ctrlPressed && oJustPressed)
         {
             AreDearDevToolsActive = !AreDearDevToolsActive;
+            if (!AreDearDevToolsActive) switchedCursorVisibility = true;
+
             Logger.LogDebug("Dear Dev Tools active: {AreDearDevToolsActive}", AreDearDevToolsActive);
         }
 
-        if (AreDearDevToolsActive && ctrlPressed && hPressed)
+        if (AreDearDevToolsActive && ctrlPressed && hJustPressed)
         {
             IsMainUiVisible = !IsMainUiVisible;
+            switchedCursorVisibility = true;
+
             Logger.LogDebug("Dear Dev Tools main UI visible: {IsMainUiVisible}", IsMainUiVisible);
         }
+
+        if (!switchedCursorVisibility && AreDearDevToolsActive && altJustPressed) ShowMouseCursor(!Cursor.visible);
     }
 
     [UsedImplicitly]
@@ -158,6 +187,39 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         On.RainWorld.OnModsInit -= OnModsInit;
 
         _serviceProvider.Dispose();
+    }
+
+    /// <summary>
+    /// Subscribes a handler to run every frame.
+    /// </summary>
+    /// <param name="handler"> Handler. </param>
+    /// <returns> Subscription token, which on dispose unsubscribes the handler. </returns>
+    public IDisposable RegisterOnUpdate(Action handler)
+    {
+        return _updateEvent.Register(handler);
+    }
+
+    /// <summary>
+    /// Shows mouse cursor.
+    /// </summary>
+    /// <remarks>
+    /// Cursor is shown automatically when <see cref="IsMainUiVisible" /> is true, and hidden automatically when false.
+    /// </remarks>
+    /// <param name="show"> Show or hide? </param>
+    public static void ShowMouseCursor(bool show = true)
+    {
+        Cursor.visible = show;
+    }
+
+    /// <summary>
+    /// Hides mouse cursor.
+    /// </summary>
+    /// <remarks>
+    /// Cursor is shown automatically when <see cref="IsMainUiVisible" /> is true, and hidden automatically when false.
+    /// </remarks>
+    public static void HideMouseCursor()
+    {
+        Cursor.visible = false;
     }
 
     private void OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
@@ -261,16 +323,22 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         var minimumLogLevel = LogLevel.Information;
 #endif
 
+        // no override allowed:
         serviceCollection.AddLogging(c => c.AddProvider(new BepInExLoggingProvider(minimumLogLevel)));
         serviceCollection.AddSingleton(this);
         serviceCollection.AddSingleton<ModImGuiContext>();
         serviceCollection.AddSingleton<MenuManager>();
-        serviceCollection.AddSingleton<DearDevToolsEnabledOverlay>();
-        serviceCollection.AddSingleton<MainMenuBar>();
-        serviceCollection.AddSingleton<GameStateService>();
+        serviceCollection.AddSingleton(Custom.rainWorld);
         serviceCollection.AddSingleton<EndEscaperService>();
-        serviceCollection.AddSingleton<HelpMenu>();
-        serviceCollection.AddSingleton<WhatsNewMenu>();
+
+        // override allowed:
+        serviceCollection.TryAddSingleton<DearDevToolsEnabledOverlay>();
+        serviceCollection.TryAddSingleton<MainMenuBar>();
+        serviceCollection.TryAddSingleton<HelpMenu>();
+        serviceCollection.TryAddSingleton<WhatsNewMenu>();
+        serviceCollection.TryAddSingleton<PaletteService>();
+        serviceCollection.TryAddSingleton<PaletteEditorMenu>();
+        serviceCollection.TryAddSingleton<GameStateService>();
     }
 
     private void Initialize()

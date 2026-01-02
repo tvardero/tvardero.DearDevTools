@@ -2,7 +2,7 @@
 using tvardero.DearDevTools.Components;
 using tvardero.DearDevTools.Services;
 
-namespace tvardero.DearDevTools.Menus;
+namespace tvardero.DearDevTools.Views;
 
 public class DearDevToolsEnabledOverlay : ImGuiDrawableBase
 {
@@ -47,8 +47,10 @@ public class DearDevToolsEnabledOverlay : ImGuiDrawableBase
         ImGui.Text("Ctrl+O to enable/disable Dear Dev Tools");
         ImGui.Text("Ctrl+H to open/close UI");
 
+#if DEBUG
         ImGui.Separator();
-        ImGui.Text(_gameStateService.CurrentProcess?.ID.ToString() ?? "Null");
+        ImGui.Text("DEBUG BUILD");
+#endif
 
         ImGui.End();
     }

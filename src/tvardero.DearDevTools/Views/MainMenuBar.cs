@@ -1,18 +1,19 @@
-﻿using tvardero.DearDevTools.Components;
+﻿using Microsoft.Extensions.DependencyInjection;
+using tvardero.DearDevTools.Components;
 using tvardero.DearDevTools.Services;
 using UnityEngine;
 
-namespace tvardero.DearDevTools.Menus;
+namespace tvardero.DearDevTools.Views;
 
 public class MainMenuBar : ImGuiDrawableBase
 {
     private readonly MenuManager _menuManager;
     private readonly EndEscaperService _endEscaperService;
 
-    public MainMenuBar(MenuManager menuManager, EndEscaperService endEscaperService)
+    public MainMenuBar(MenuManager menuManager, IServiceProvider serviceProvider)
     {
         _menuManager = menuManager;
-        _endEscaperService = endEscaperService;
+        _endEscaperService = serviceProvider.GetRequiredService<EndEscaperService>();
     }
 
     /// <inheritdoc />
@@ -71,6 +72,11 @@ public class MainMenuBar : ImGuiDrawableBase
         }
     }
 
+    protected virtual void ProcessShortcuts()
+    {
+        if (ImGui.Shortcut(ImGuiKey.F1, ImGuiInputFlags.RouteGlobal)) _menuManager.EnsureShown<HelpMenu>();
+    }
+
     private static void MenuBarView()
     {
         ImGui.MenuItem("RW Debug");
@@ -113,7 +119,7 @@ public class MainMenuBar : ImGuiDrawableBase
         ImGui.MenuItem("Region editor");
         ImGui.MenuItem("Dialog editor");
         ImGui.MenuItem("Map editor");
-        ImGui.MenuItem("Palette editor");
+        if (ImGui.MenuItem("Palette editor")) _menuManager.EnsureShown<PaletteEditorMenu>();
 
         ImGui.Separator();
 
@@ -146,10 +152,5 @@ public class MainMenuBar : ImGuiDrawableBase
         ImGui.MenuItem("Room objects");
         ImGui.MenuItem("Room sounds");
         ImGui.MenuItem("Room triggers");
-    }
-
-    private void ProcessShortcuts()
-    {
-        if (ImGui.Shortcut(ImGuiKey.F1, ImGuiInputFlags.RouteGlobal)) _menuManager.EnsureShown<HelpMenu>();
     }
 }

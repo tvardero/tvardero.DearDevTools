@@ -1,57 +1,87 @@
-﻿using Menu;
+﻿using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
+using Menu;
 using Microsoft.Extensions.Logging;
 using MoreSlugcats;
-using RWCustom;
+using tvardero.DearDevTools.Util;
 
 namespace tvardero.DearDevTools.Services;
 
+[MustDisposeResource]
 public class GameStateService : IDisposable
 {
     private readonly ILogger<GameStateService> _logger;
+    private readonly Eventer<GameStateService> _stateChanged = new();
+    private readonly Eventer<RoomChanged> _roomChanged = new();
+    private readonly IDisposable _updateRegistration;
 
-    public GameStateService(ILogger<GameStateService> logger)
+    public GameStateService(ILogger<GameStateService> logger, RainWorld rainWorld, DearDevToolsPlugin plugin)
     {
         _logger = logger;
-
-        On.ProcessManager.PostSwitchMainProcess += PostSwitchProcess;
-        _logger.LogDebug("Registered On.ProcessManager.PostSwitchMainProcess hook");
-
-        RefreshValuesFromGame();
+        RainWorld = rainWorld;
+        _updateRegistration = plugin.RegisterOnUpdate(OnUpdate);
     }
 
-    public bool IsInGame { get; private set; }
+    public bool IsInGame => CurrentProcess is RainWorldGame;
 
-    public bool IsInSleepOrDeathMenu { get; private set; }
+    public bool IsInSleepOrDeathMenu => CurrentProcess is SleepAndDeathScreen or GhostEncounterScreen;
 
-    public bool IsInMainMenu { get; private set; }
+    public bool IsInMainMenu =>
+        CurrentProcess is MainMenu or SlugcatSelectMenu or Menu.RegionSelectMenu or MultiplayerMenu or FastTravelScreen or InputOptionsMenu
+                       or ModdingMenu or OptionsMenu or BackgroundOptionsMenu or ExpeditionMenu or CollectionsMenu;
+
+    public RainWorld RainWorld { get; private set; }
 
     public MainLoopProcess? CurrentProcess { get; private set; }
+
+    public RainWorldGame? RainWorldGame => CurrentProcess as RainWorldGame;
+
+    public RoomCamera? CameraZero => RainWorldGame?.cameras[0];
+
+    public Room? CurrentRoom { get; private set; }
+
+    [NotNullIfNotNull(nameof(CurrentRoom))]
+    public RoomSettings? CurrentRoomSettings => CurrentRoom?.roomSettings;
 
     /// <inheritdoc />
     public void Dispose()
     {
-        On.ProcessManager.PostSwitchMainProcess -= PostSwitchProcess;
-        _logger.LogDebug("Unregistered On.ProcessManager.PostSwitchMainProcess hook");
-
+        _updateRegistration.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    public void RefreshValuesFromGame()
+    public void OnUpdate()
     {
-        _logger.LogDebug("Refreshing game state values from game");
+        MainLoopProcess? newCurrentProcess = RainWorld.processManager.currentMainLoop;
 
-        RainWorld? rw = Custom.rainWorld;
-        CurrentProcess = rw.processManager.currentMainLoop;
+        Room? newRoom = (newCurrentProcess as RainWorldGame)?.cameras[0].room;
+        if (newRoom != CurrentRoom)
+        {
+            Room? oldRoom = CurrentRoom;
+            CurrentRoom = newRoom;
 
-        IsInGame = CurrentProcess is RainWorldGame;
-        IsInSleepOrDeathMenu = CurrentProcess is SleepAndDeathScreen or GhostEncounterScreen;
-        IsInMainMenu = CurrentProcess is MainMenu or SlugcatSelectMenu or Menu.RegionSelectMenu or MultiplayerMenu or FastTravelScreen
-                                      or InputOptionsMenu or ModdingMenu or OptionsMenu or BackgroundOptionsMenu or ExpeditionMenu or CollectionsMenu;
+            try { _roomChanged.Fire(new RoomChanged(oldRoom, newRoom)); }
+            catch (Exception e) { _logger.LogWarning(e, "Some room change handler failed"); }
+        }
+
+        if (CurrentProcess != newCurrentProcess)
+        {
+            CurrentProcess = newCurrentProcess;
+
+            try { _stateChanged.Fire(this); }
+            catch (Exception e) { _logger.LogWarning(e, "Some game state change handler failed"); }
+        }
     }
 
-    private void PostSwitchProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID id)
+    public IDisposable RegisterOnRoomChanged(Action<RoomChanged> handler)
     {
-        orig(self, id);
-        RefreshValuesFromGame();
+        return _roomChanged.Register(handler);
     }
+
+    public IDisposable RegisterOnStateChanged(Action<GameStateService> handler)
+    {
+        return _stateChanged.Register(handler);
+    }
+
+    public record struct RoomChanged(Room? oldRoom, Room? newRoom);
 }

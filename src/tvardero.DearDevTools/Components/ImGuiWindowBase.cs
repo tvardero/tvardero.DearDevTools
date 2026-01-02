@@ -98,7 +98,8 @@ public abstract class ImGuiWindowBase : ImGuiDrawableBase
             return;
         }
 
-        ImGui.SetNextWindowSize(_initialSize, ImGuiCond.FirstUseEver);
+        ImGuiCond sizeFlags = WindowFlags.HasFlag(ImGuiWindowFlags.NoResize) ? ImGuiCond.Always : ImGuiCond.Once;
+        ImGui.SetNextWindowSize(_initialSize, sizeFlags);
         ImGui.Begin(_imguiWindowTitle, ref _isOpen, WindowFlags);
 
         if (_stealFocusNextFrame)

@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace tvardero.DearDevTools.Components;
+namespace tvardero.MenuTests.Components;
 
 [PublicAPI]
 public abstract class ImGuiDrawableBase : IDisposable

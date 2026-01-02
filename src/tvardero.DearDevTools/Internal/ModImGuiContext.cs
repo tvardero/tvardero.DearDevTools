@@ -2,7 +2,7 @@
 using RWIMGUI.API;
 using tvardero.DearDevTools.Components;
 
-namespace tvardero.DearDevTools.Services;
+namespace tvardero.DearDevTools.Internal;
 
 internal sealed class ModImGuiContext : IMGUIContext, IDisposable
 {

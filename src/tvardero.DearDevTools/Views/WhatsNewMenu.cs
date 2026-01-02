@@ -1,6 +1,6 @@
 ﻿using tvardero.DearDevTools.Components;
 
-namespace tvardero.DearDevTools.Menus;
+namespace tvardero.DearDevTools.Views;
 
 public class WhatsNewMenu : ImGuiWindowBase
 {

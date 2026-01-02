@@ -3,7 +3,7 @@ using ImGuiNET;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
-namespace tvardero.DearDevTools.Components;
+namespace tvardero.MenuTests.Components;
 
 [PublicAPI]
 public abstract class ImGuiWindowBase : ImGuiDrawableBase
@@ -82,6 +82,12 @@ public abstract class ImGuiWindowBase : ImGuiDrawableBase
         _stealFocusNextFrame = true;
     }
 
+    public virtual void Reopen()
+    {
+        _isOpen = true;
+        IsDisposed = false;
+    }
+
     /// <inheritdoc />
     protected internal sealed override void Draw()
     {
@@ -93,7 +99,8 @@ public abstract class ImGuiWindowBase : ImGuiDrawableBase
             return;
         }
 
-        ImGui.SetNextWindowSize(_initialSize, ImGuiCond.FirstUseEver);
+        ImGuiCond sizeFlags = WindowFlags.HasFlag(ImGuiWindowFlags.NoResize) ? ImGuiCond.Always : ImGuiCond.Once;
+        ImGui.SetNextWindowSize(_initialSize, sizeFlags);
         ImGui.Begin(_imguiWindowTitle, ref _isOpen, WindowFlags);
 
         if (_stealFocusNextFrame)

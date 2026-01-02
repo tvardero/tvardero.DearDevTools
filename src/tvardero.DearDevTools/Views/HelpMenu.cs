@@ -1,6 +1,6 @@
 ﻿using tvardero.DearDevTools.Components;
 
-namespace tvardero.DearDevTools.Menus;
+namespace tvardero.DearDevTools.Views;
 
 public class HelpMenu : ImGuiWindowWithLeftPanelBase
 {
@@ -13,5 +13,8 @@ public class HelpMenu : ImGuiWindowWithLeftPanelBase
     protected override void OnDrawLeftPanel() { }
 
     /// <inheritdoc />
-    protected override void OnDrawMiddleContent() { }
+    protected override void OnDrawMiddleContent()
+    {
+        ImGui.EndDisabled();
+    }
 }

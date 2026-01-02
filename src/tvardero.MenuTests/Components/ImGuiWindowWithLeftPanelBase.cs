@@ -2,7 +2,7 @@
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 
-namespace tvardero.DearDevTools.Components;
+namespace tvardero.MenuTests.Components;
 
 public abstract class ImGuiWindowWithLeftPanelBase : ImGuiWindowBase
 {
