@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using UnityEngine.Diagnostics;
 
 namespace tvardero.DearDevTools.Services;
@@ -20,11 +22,24 @@ internal sealed class EndEscaperService
     }
 
     /// <summary>
-    /// Escapes the end.
+    /// Escapes the End.
     /// </summary>
-    public void EscapeTheEnd()
+    /// <remarks>
+    /// Crashes the game intentionally.
+    /// </remarks>
+    /// <param name="quick"> Crash the game without Unity crash handler (using <c>kill PID</c>). </param>
+    [DoesNotReturn]
+    public void EscapeTheEnd(bool quick = false)
     {
         _logger.LogCritical("Escaping the end");
-        Utils.ForceCrash(ForcedCrashCategory.Abort);
+
+        if (quick)
+        {
+            int pid = Process.GetCurrentProcess().Id;
+            Process.GetProcessById(pid).Kill();
+        }
+        else { Utils.ForceCrash(ForcedCrashCategory.Abort); }
+
+        throw null!; // unreachable
     }
 }

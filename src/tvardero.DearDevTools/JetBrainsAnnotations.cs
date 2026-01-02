@@ -35,7 +35,7 @@ SOFTWARE. */
 // ReSharper disable ArrangeNamespaceBody
 // ReSharper disable InconsistentNaming
 // ReSharper disable once CheckNamespace
-namespace JetBrains.Annotations;
+namespace tvardero.JetBrains.Annotations;
 
 /// <summary>
 /// Indicates that the value of the marked element could be <c> null </c> sometimes,

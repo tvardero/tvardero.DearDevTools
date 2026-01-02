@@ -49,7 +49,7 @@ public class DearDevToolsEnabledOverlay : ImGuiDrawableBase
 
 #if DEBUG
         ImGui.Separator();
-        ImGui.Text("DEBUG BUILD");
+        ImGui.TextColored(new Vector4(1, 0, 0, 1), "DEBUG BUILD");
 #endif
 
         ImGui.End();

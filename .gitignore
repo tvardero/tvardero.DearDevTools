@@ -499,3 +499,6 @@ dist/
 
 # Local env settings
 .env.local
+
+# Other
+src/tvardero.MenuTests/Palettes

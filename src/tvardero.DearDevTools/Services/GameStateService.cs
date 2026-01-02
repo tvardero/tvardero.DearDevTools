@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using JetBrains.Annotations;
 using Menu;
 using Microsoft.Extensions.Logging;
 using MoreSlugcats;
 using tvardero.DearDevTools.Util;
+using tvardero.JetBrains.Annotations;
 
 namespace tvardero.DearDevTools.Services;
 
