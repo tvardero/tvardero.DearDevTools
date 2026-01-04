@@ -1,16 +1,18 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using tvardero.DearDevTools.Components;
 using tvardero.DearDevTools.Services;
 using UnityEngine;
 
-namespace tvardero.DearDevTools.Views;
+namespace tvardero.DearDevTools.Menus;
 
 public class MainMenuBar : ImGuiDrawableBase
 {
     private readonly MenuManager _menuManager;
     private readonly EndEscaperService _endEscaperService;
 
-    public MainMenuBar(MenuManager menuManager, IServiceProvider serviceProvider)
+    public MainMenuBar(MenuManager menuManager, IServiceProvider serviceProvider, ILogger<MainMenuBar> logger)
+        : base(logger: logger)
     {
         _menuManager = menuManager;
         _endEscaperService = serviceProvider.GetRequiredService<EndEscaperService>();

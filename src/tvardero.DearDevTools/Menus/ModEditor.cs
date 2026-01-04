@@ -1,7 +1,8 @@
-﻿using tvardero.DearDevTools.Components;
+﻿using Microsoft.Extensions.Logging;
+using tvardero.DearDevTools.Components;
 using tvardero.DearDevTools.Models;
 
-namespace tvardero.DearDevTools.Views;
+namespace tvardero.DearDevTools.Menus;
 
 // TODO
 public class ModEditor : ImGuiWindowWithLeftPanelBase
@@ -12,7 +13,7 @@ public class ModEditor : ImGuiWindowWithLeftPanelBase
     private string? _selectedModId;
 
     /// <inheritdoc />
-    public ModEditor() : base("Mod Editor")
+    public ModEditor(ILogger<ModEditor> logger) : base("Mod Editor", logger: logger)
     {
         ReloadList();
     }

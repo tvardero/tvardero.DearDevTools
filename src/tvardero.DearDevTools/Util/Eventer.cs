@@ -1,7 +1,9 @@
-﻿namespace tvardero.DearDevTools.Util;
+﻿using tvardero.JetBrains.Annotations;
+
+namespace tvardero.DearDevTools.Util;
 
 /// <summary>
-/// Event without parameters, that manages subscription and unsubscription via disposable tokens.
+/// Event producer without parameters, that manages subscription and unsubscription via disposable tokens.
 /// </summary>
 public class Eventer
 {
@@ -25,10 +27,12 @@ public class Eventer
 
     /// <summary>
     /// Subscribes a handler to run when event fires.
+    /// To unsubscribe the handler, <see cref="IDisposable.Dispose"> dispose </see> the token that you get in return.
     /// </summary>
     /// <param name="handler"> Handler. </param>
     /// <returns> Subscription token, which on dispose unsubscribes the handler. </returns>
     /// <exception cref="ArgumentNullException"> Handler is null. </exception>
+    [MustDisposeResource]
     public IDisposable Register(Action handler)
     {
         if (handler == null) throw new ArgumentNullException(nameof(handler));
@@ -67,7 +71,7 @@ public class Eventer
 }
 
 /// <summary>
-/// Event with a strongly-typed parameter, that manages subscription and unsubscription via disposable tokens.
+/// Event producer with a strongly-typed parameter, that manages subscription and unsubscription via disposable tokens.
 /// </summary>
 /// <typeparam name="TArgument"> Type of event argument. </typeparam>
 public class Eventer<TArgument>
@@ -93,10 +97,12 @@ public class Eventer<TArgument>
 
     /// <summary>
     /// Subscribes a handler to run when event fires.
+    /// To unsubscribe the handler, <see cref="IDisposable.Dispose"> dispose </see> the token that you get in return.
     /// </summary>
     /// <param name="handler"> Handler. </param>
     /// <returns> Subscription token, which on dispose unsubscribes the handler. </returns>
     /// <exception cref="ArgumentNullException"> Handler is null. </exception>
+    [MustDisposeResource]
     public IDisposable Register(Action<TArgument> handler)
     {
         if (handler == null) throw new ArgumentNullException(nameof(handler));

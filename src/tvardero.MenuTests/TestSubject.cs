@@ -5,16 +5,16 @@ namespace tvardero.MenuTests;
 public class TestSubject
 {
     private const string _DEFAULT_TITLE = "Palette editor###Palette editor";
-    
+
     private bool _isOpen = true;
     private string _windowTitle = _DEFAULT_TITLE;
-    
+
     // room info
     private bool _roomLoaded;
     private string? _roomName;
     private bool _roomHasTemplate;
     private int _roomScreens = 1;
-    
+
     // palette selections
     private int _palette;
     private bool _useTemplatePalette;
@@ -23,39 +23,17 @@ public class TestSubject
     private int _effectB;
     private bool _useTemplateEffectB;
     private bool _paletteSelectorOpen;
-    
+
     // all palettes info
     private List<int> _availablePalettes = [];
     private bool _fileWatchedEnabled;
-
-    public bool IsOpen => _isOpen;
 
     public TestSubject()
     {
         Load();
     }
 
-    public void Load()
-    {
-        _roomName = "SS_AI";
-        _roomHasTemplate = true;
-        _windowTitle = $"Palette editor - {_roomName}###Palette editor";
-        _roomLoaded = true;
-    }
-
-    public void Reset()
-    {
-        _roomName = null;
-        _roomHasTemplate = false;
-        _palette = 0;
-        _useTemplatePalette = false;
-        _effectA = 0;
-        _useTemplateEffectA = false;
-        _effectB = 0;
-        _useTemplateEffectB = false;
-        _windowTitle = _DEFAULT_TITLE;
-        _roomLoaded = false;
-    }
+    public bool IsOpen => _isOpen;
 
     public void Draw()
     {
@@ -91,7 +69,7 @@ public class TestSubject
         if (ImGui.ArrowButton("##PreviousPalette", ImGuiDir.Left)) _palette--;
 
         ImGui.SameLine();
-        if (ImGui.Button("Select##SelectPalette")) { _paletteSelectorOpen = true; }
+        if (ImGui.Button("Select##SelectPalette")) _paletteSelectorOpen = true;
 
         ImGui.SameLine();
         if (ImGui.ArrowButton("##NextPalette", ImGuiDir.Right)) _palette++;
@@ -101,5 +79,27 @@ public class TestSubject
         // Effect A selection
 
         ImGui.End();
+    }
+
+    public void Load()
+    {
+        _roomName = "SS_AI";
+        _roomHasTemplate = true;
+        _windowTitle = $"Palette editor - {_roomName}###Palette editor";
+        _roomLoaded = true;
+    }
+
+    public void Reset()
+    {
+        _roomName = null;
+        _roomHasTemplate = false;
+        _palette = 0;
+        _useTemplatePalette = false;
+        _effectA = 0;
+        _useTemplateEffectA = false;
+        _effectB = 0;
+        _useTemplateEffectB = false;
+        _windowTitle = _DEFAULT_TITLE;
+        _roomLoaded = false;
     }
 }

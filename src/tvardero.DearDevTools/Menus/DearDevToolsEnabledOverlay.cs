@@ -1,15 +1,17 @@
 ﻿using System.Numerics;
+using Microsoft.Extensions.Logging;
 using tvardero.DearDevTools.Components;
 using tvardero.DearDevTools.Services;
 
-namespace tvardero.DearDevTools.Views;
+namespace tvardero.DearDevTools.Menus;
 
 public class DearDevToolsEnabledOverlay : ImGuiDrawableBase
 {
     private readonly DearDevToolsPlugin _plugin;
     private readonly GameStateService _gameStateService;
 
-    public DearDevToolsEnabledOverlay(DearDevToolsPlugin plugin, GameStateService gameStateService)
+    public DearDevToolsEnabledOverlay(DearDevToolsPlugin plugin, GameStateService gameStateService, ILogger<DearDevToolsEnabledOverlay> logger)
+        : base(logger: logger)
     {
         _plugin = plugin;
         _gameStateService = gameStateService;

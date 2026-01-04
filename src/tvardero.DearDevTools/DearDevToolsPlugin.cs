@@ -4,11 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using RWCustom;
-using tvardero.DearDevTools.Internal;
 using tvardero.DearDevTools.Logging;
+using tvardero.DearDevTools.Menus;
 using tvardero.DearDevTools.Services;
 using tvardero.DearDevTools.Util;
-using tvardero.DearDevTools.Views;
 using UnityEngine;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -121,7 +120,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         if (_instance != this) return;
 
         try { _updateEvent.Fire(); }
-        catch (Exception e) { Logger.LogWarning(e, "Some update handler failed"); }
+        catch (AggregateException e) { Logger.LogWarning(e, "Some update handler failed"); }
 
         // todo: make shortcuts configurable
         bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
@@ -337,8 +336,8 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         serviceCollection.TryAddSingleton<HelpMenu>();
         serviceCollection.TryAddSingleton<WhatsNewMenu>();
         serviceCollection.TryAddSingleton<PaletteService>();
-        serviceCollection.TryAddSingleton<PaletteEditorMenu>();
         serviceCollection.TryAddSingleton<GameStateService>();
+        serviceCollection.TryAddTransient<PaletteEditorMenu>();
     }
 
     private void Initialize()

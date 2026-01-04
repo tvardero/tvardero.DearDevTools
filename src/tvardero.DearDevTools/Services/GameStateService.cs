@@ -43,6 +43,8 @@ public class GameStateService : IDisposable
     [NotNullIfNotNull(nameof(CurrentRoom))]
     public RoomSettings? CurrentRoomSettings => CurrentRoom?.roomSettings;
 
+    public RoomSettings? CurrentRoomSettingsTemplate => CurrentRoomSettings?.parent is { isAncestor: false } ? CurrentRoomSettings.parent : null;
+
     /// <inheritdoc />
     public void Dispose()
     {
@@ -73,11 +75,13 @@ public class GameStateService : IDisposable
         }
     }
 
+    [MustDisposeResource]
     public IDisposable RegisterOnRoomChanged(Action<RoomChanged> handler)
     {
         return _roomChanged.Register(handler);
     }
 
+    [MustDisposeResource]
     public IDisposable RegisterOnStateChanged(Action<GameStateService> handler)
     {
         return _stateChanged.Register(handler);

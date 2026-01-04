@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using tvardero.DearDevTools.Components;
-using tvardero.DearDevTools.Internal;
 
 namespace tvardero.DearDevTools.Services;
 

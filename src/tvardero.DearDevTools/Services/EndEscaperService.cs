@@ -27,7 +27,7 @@ internal sealed class EndEscaperService
     /// <remarks>
     /// Crashes the game intentionally.
     /// </remarks>
-    /// <param name="quick"> Crash the game without Unity crash handler (using <c>kill PID</c>). </param>
+    /// <param name="quick"> Crash the game without Unity crash handler (using <c> kill PID </c>). </param>
     [DoesNotReturn]
     public void EscapeTheEnd(bool quick = false)
     {
@@ -38,7 +38,7 @@ internal sealed class EndEscaperService
             int pid = Process.GetCurrentProcess().Id;
             Process.GetProcessById(pid).Kill();
         }
-        else { Utils.ForceCrash(ForcedCrashCategory.Abort); }
+        else Utils.ForceCrash(ForcedCrashCategory.Abort);
 
         throw null!; // unreachable
     }

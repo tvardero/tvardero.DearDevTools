@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
@@ -7,10 +8,8 @@ namespace tvardero.DearDevTools.Components;
 [PublicAPI]
 public abstract class ImGuiWindowBase : ImGuiDrawableBase
 {
-    private static int _counter = 1;
     private readonly Vector2 _initialSize;
     private readonly bool _disposeOnClose;
-    private string _imguiWindowTitle;
     private bool _isOpen = true;
     private bool _stealFocusNextFrame;
 
@@ -23,15 +22,11 @@ public abstract class ImGuiWindowBase : ImGuiDrawableBase
         bool allowMultipleInstances = false,
         ILogger? logger = null) : base(allowMultipleInstances, logger)
     {
-        Title = title;
+        Title = !title.Contains("##") && allowMultipleInstances ? $"{title}##{InstancesCounter}" : title;
         WindowFlags = windowFlags;
         _initialSize = initialSize ?? new Vector2(600, 400);
         _disposeOnClose = disposeOnClose;
-        Id = allowMultipleInstances ? $"###{title}:{_counter++}" : $"###{title}";
-        _imguiWindowTitle = Title + Id;
     }
-
-    public string Id { get; }
 
     /// <inheritdoc />
     public override bool IsVisible
@@ -59,10 +54,10 @@ public abstract class ImGuiWindowBase : ImGuiDrawableBase
         {
             ThrowIfDisposed();
 
-            if (value == field) return;
+            if (field == value) return;
 
+            if (!value.Contains("##") && AllowsMultipleInstances) value = value + "##" + InstancesCounter;
             field = value;
-            _imguiWindowTitle = value + Id;
         }
     }
 
@@ -100,7 +95,7 @@ public abstract class ImGuiWindowBase : ImGuiDrawableBase
 
         ImGuiCond sizeFlags = WindowFlags.HasFlag(ImGuiWindowFlags.NoResize) ? ImGuiCond.Always : ImGuiCond.Once;
         ImGui.SetNextWindowSize(_initialSize, sizeFlags);
-        ImGui.Begin(_imguiWindowTitle, ref _isOpen, WindowFlags);
+        ImGui.Begin(Title, ref _isOpen, WindowFlags);
 
         if (_stealFocusNextFrame)
         {

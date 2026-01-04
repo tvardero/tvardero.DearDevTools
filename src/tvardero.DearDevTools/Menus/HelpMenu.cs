@@ -1,11 +1,12 @@
-﻿using tvardero.DearDevTools.Components;
+﻿using Microsoft.Extensions.Logging;
+using tvardero.DearDevTools.Components;
 
-namespace tvardero.DearDevTools.Views;
+namespace tvardero.DearDevTools.Menus;
 
 public class HelpMenu : ImGuiWindowWithLeftPanelBase
 {
     /// <inheritdoc />
-    public HelpMenu() : base("Help") { }
+    public HelpMenu(ILogger<HelpMenu> logger) : base("Help", logger: logger) { }
 
     public void NavigateTo(string docId) { }
 
