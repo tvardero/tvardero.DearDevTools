@@ -10,11 +10,15 @@ public class MainMenuBar : ImGuiDrawableBase
 {
     private readonly MenuManager _menuManager;
     private readonly EndEscaperService _endEscaperService;
+    private readonly GameStateService _gameStateService;
+    private bool _debugLogActive;
+    private bool _debugMetricsActive;
 
-    public MainMenuBar(MenuManager menuManager, IServiceProvider serviceProvider, ILogger<MainMenuBar> logger)
+    public MainMenuBar(MenuManager menuManager, IServiceProvider serviceProvider, ILogger<MainMenuBar> logger, GameStateService gameStateService)
         : base(logger: logger)
     {
         _menuManager = menuManager;
+        _gameStateService = gameStateService;
         _endEscaperService = serviceProvider.GetRequiredService<EndEscaperService>();
     }
 
@@ -34,35 +38,15 @@ public class MainMenuBar : ImGuiDrawableBase
 
         if (ImGui.BeginMainMenuBar())
         {
-            if (ImGui.BeginMenu("Menu"))
-            {
-                MenuBarMenu();
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Edit"))
-            {
-                MenuBarEdit();
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("View"))
-            {
-                MenuBarView();
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Navigate"))
-            {
-                MenuBarNavigate();
-                ImGui.EndMenu();
-            }
+            if (!_gameStateService.IsInGame) ImGui.BeginDisabled();
 
             if (ImGui.BeginMenu("Tools"))
             {
                 MenuBarTools();
                 ImGui.EndMenu();
             }
+
+            if (!_gameStateService.IsInGame) ImGui.EndDisabled();
 
             if (ImGui.BeginMenu("Help"))
             {
@@ -72,28 +56,14 @@ public class MainMenuBar : ImGuiDrawableBase
 
             ImGui.EndMainMenuBar();
         }
+
+        if (_debugLogActive) ImGui.ShowDebugLogWindow();
+        if (_debugMetricsActive) ImGui.ShowMetricsWindow();
     }
 
     protected virtual void ProcessShortcuts()
     {
         if (ImGui.Shortcut(ImGuiKey.F1, ImGuiInputFlags.RouteGlobal)) _menuManager.EnsureShown<HelpMenu>();
-    }
-
-    private static void MenuBarView()
-    {
-        ImGui.MenuItem("RW Debug");
-        ImGui.MenuItem("ImGui Debug");
-    }
-
-    private void MenuBarEdit()
-    {
-        ImGui.MenuItem("Undo", "Ctrl+Z");
-        ImGui.MenuItem("Redo", "Ctrl+Y");
-
-        ImGui.Separator();
-
-        // TODO: history
-        ImGui.MenuItem("Clear history");
     }
 
     private void MenuBarHelp()
@@ -112,47 +82,17 @@ public class MainMenuBar : ImGuiDrawableBase
 
         ImGui.Separator();
 
+        if (ImGui.MenuItem("ImGui debug logs", _debugLogActive)) _debugLogActive = !_debugLogActive;
+
+        if (ImGui.MenuItem("ImGui debug metrics", _debugMetricsActive)) _debugMetricsActive = !_debugMetricsActive;
+
+        ImGui.Separator();
+
         if (ImGui.MenuItem("Escape the end", "Esc + End")) _endEscaperService.EscapeTheEnd();
-    }
-
-    private void MenuBarMenu()
-    {
-        ImGui.MenuItem("Mod editor");
-        ImGui.MenuItem("Region editor");
-        ImGui.MenuItem("Dialog editor");
-        ImGui.MenuItem("Map editor");
-        if (ImGui.MenuItem("Palette editor")) _menuManager.EnsureShown<PaletteEditorMenu>();
-
-        ImGui.Separator();
-
-        ImGui.MenuItem("Settings");
-    }
-
-    private void MenuBarNavigate()
-    {
-        ImGui.MenuItem("Warp to region/room");
-        ImGui.MenuItem("Warp back");
-
-        ImGui.Separator();
-
-        ImGui.MenuItem("Sleep screen");
-        ImGui.MenuItem("Death screen");
-        ImGui.MenuItem("Main menu");
     }
 
     private void MenuBarTools()
     {
-        ImGui.MenuItem("Weather control");
-        ImGui.MenuItem("Creatures control");
-        ImGui.MenuItem("Kill all creatures except slugcat", "Ctrl+K");
-
-        ImGui.Separator();
-
-        ImGui.MenuItem("Room settings");
-        ImGui.MenuItem("Palette editor");
-        ImGui.MenuItem("Room effects");
-        ImGui.MenuItem("Room objects");
-        ImGui.MenuItem("Room sounds");
-        ImGui.MenuItem("Room triggers");
+        if (ImGui.MenuItem("Palette editor")) _menuManager.CreateNew<PaletteEditorMenu>();
     }
 }

@@ -8,8 +8,6 @@ namespace tvardero.DearDevTools.Components;
 [PublicAPI]
 public abstract class ImGuiDrawableBase : IDisposable
 {
-    protected static int InstancesCounter { get; private set; }
-
     protected ImGuiDrawableBase(bool allowsMultipleInstances = false, ILogger? logger = null)
     {
         InstancesCounter++;
@@ -41,6 +39,8 @@ public abstract class ImGuiDrawableBase : IDisposable
     public virtual bool RequiresMainUiVisible { get; protected set; } = true;
 
     public virtual bool IsBlockingWMEvent { get; protected set; }
+
+    protected static int InstancesCounter { get; private set; }
 
     protected ILogger Logger { get; }
 

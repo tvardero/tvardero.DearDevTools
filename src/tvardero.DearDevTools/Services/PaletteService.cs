@@ -86,12 +86,12 @@ public class PaletteService
             roomSettings.fadePalette.palette = fadePalette.Value;
             roomSettings.fadePalette.fades = fadeRates;
         }
-        
+
         if (!force && !palIsNew && !eColIsNew && !fadeIsNew) return;
         if (_gameStateService.RainWorldGame == null) return;
 
         _logger.LogInformation("Applying new palettes to camera");
-        
+
         foreach (RoomCamera roomCamera in _gameStateService.RainWorldGame.cameras)
         {
             if (roomCamera.room != room) continue;

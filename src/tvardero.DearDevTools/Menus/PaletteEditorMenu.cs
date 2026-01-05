@@ -11,6 +11,8 @@ public class PaletteEditorMenu : ImGuiWindowBase
     private static PaletteModel[] _availablePalettes = [];
     private readonly PaletteService _paletteService;
     private readonly GameStateService _gameStateService;
+    private readonly IDisposable _registerOnStateChanged;
+    private readonly IDisposable _registerOnRoomChanged;
     private Room? _loadedRoom;
     private int _palette;
     private int _effectA;
@@ -20,18 +22,12 @@ public class PaletteEditorMenu : ImGuiWindowBase
     private bool _useEffectAFromTemplate;
     private bool _useEffectBFromTemplate;
     private bool _hasFadePalette;
+    private bool _hasChanges;
     private float[] _fadeRates = [];
-    private readonly IDisposable _registerOnStateChanged;
-
-    [MemberNotNullWhen(true, nameof(_loadedRoom))]
-    private bool HasRoomLoaded => _loadedRoom != null;
-
-    [MemberNotNullWhen(true, nameof(_loadedRoom))]
-    private bool RoomHasTemplate => _loadedRoom is { roomSettings.parent.isAncestor: false };
 
     public PaletteEditorMenu(PaletteService paletteService, GameStateService gameStateService, ILogger<PaletteEditorMenu> logger)
         : base("Palette editor",
-            ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoSavedSettings,
+            ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize,
             disposeOnClose: true,
             allowMultipleInstances: true,
             logger: logger)
@@ -44,22 +40,36 @@ public class PaletteEditorMenu : ImGuiWindowBase
         {
             if (!state.IsInGame) Close();
         });
+
+        _registerOnRoomChanged = _gameStateService.RegisterOnRoomChanged(roomChange =>
+        {
+            if (_loadedRoom == null) return;
+
+            if (roomChange.newRoom != _loadedRoom && !Title.Contains(" (NOT CURRENT)")) Title += " (NOT CURRENT)";
+            else if (roomChange.newRoom == _loadedRoom && Title.Contains(" (NOT CURRENT)")) Title = Title.Replace(" (NOT CURRENT)", string.Empty);
+        });
     }
+
+    [MemberNotNullWhen(true, nameof(_loadedRoom))]
+    private bool HasRoomLoaded => _loadedRoom != null;
+
+    [MemberNotNullWhen(true, nameof(_loadedRoom))]
+    private bool RoomHasTemplate => _loadedRoom is { roomSettings.parent.isAncestor: false };
 
     /// <inheritdoc />
     protected override void OnDispose()
     {
         _registerOnStateChanged.Dispose();
+        _registerOnRoomChanged.Dispose();
 
         base.OnDispose();
     }
 
     /// <inheritdoc />
-    public override bool IsBlockingWMEvent => false;
-
-    /// <inheritdoc />
     protected override void OnDrawWindowContent()
     {
+        if (!_gameStateService.IsInGame) Close();
+
         ImGui.BeginMenuBar();
 
         if (ImGui.BeginMenu("Room"))
@@ -85,6 +95,54 @@ public class PaletteEditorMenu : ImGuiWindowBase
         }
 
         ImGui.EndMenuBar();
+
+        if (!HasRoomLoaded) ImGui.BeginDisabled();
+
+        bool updates = false;
+
+        updates |= ImGui.InputInt("Palette", ref _palette);
+        updates |= ImGui.InputInt("Effect A", ref _effectA);
+        updates |= ImGui.InputInt("Effect B", ref _effectB);
+
+        if (!HasRoomLoaded) ImGui.EndDisabled();
+
+        if (updates)
+        {
+            ApplyToCurrentRoom();
+            _hasChanges = true;
+            WindowFlags |= ImGuiWindowFlags.UnsavedDocument;
+        }
+
+        if (!HasRoomLoaded || !_hasChanges) ImGui.BeginDisabled();
+
+        if (ImGui.Button("Save settings")) { SaveRoomSettings(); }
+
+        if (!HasRoomLoaded || !_hasChanges) ImGui.EndDisabled();
+    }
+
+    private void SaveRoomSettings()
+    {
+        _loadedRoom?.roomSettings.Save();
+        _hasChanges = false;
+        WindowFlags ^= ImGuiWindowFlags.UnsavedDocument;
+    }
+
+    private static int GetNextFrom(int palette)
+    {
+        if (_availablePalettes.Length == 0) return palette;
+        if (_availablePalettes.Length == 1) return _availablePalettes[0].Id;
+
+        PaletteModel next = _availablePalettes.FirstOrDefault(palInfo => palInfo.Id > palette) ?? _availablePalettes[0];
+        return next.Id;
+    }
+
+    private static int GetPrevFrom(int palette)
+    {
+        if (_availablePalettes.Length == 0) return palette;
+        if (_availablePalettes.Length == 1) return _availablePalettes[0].Id;
+
+        PaletteModel prev = _availablePalettes.LastOrDefault(palInfo => palInfo.Id < palette) ?? _availablePalettes[^1];
+        return prev.Id;
     }
 
     private void ApplyToCurrentRoom()
@@ -103,24 +161,6 @@ public class PaletteEditorMenu : ImGuiWindowBase
         catch (Exception e) { Logger.LogError(e, "Failed to apply settings to room"); }
     }
 
-    private static int GetNextFrom(int palette)
-    {
-        if (_availablePalettes.Length == 0) return palette;
-        if (_availablePalettes.Length == 1) return _availablePalettes[0].Id;
-
-        var next = _availablePalettes.FirstOrDefault(palInfo => palInfo.Id > palette) ?? _availablePalettes[0];
-        return next.Id;
-    }
-
-    private static int GetPrevFrom(int palette)
-    {
-        if (_availablePalettes.Length == 0) return palette;
-        if (_availablePalettes.Length == 1) return _availablePalettes[0].Id;
-
-        var prev = _availablePalettes.LastOrDefault(palInfo => palInfo.Id < palette) ?? _availablePalettes[^1];
-        return prev.Id;
-    }
-
     private void LoadCurrentRoom()
     {
         _loadedRoom = _gameStateService.CurrentRoom;
@@ -128,6 +168,7 @@ public class PaletteEditorMenu : ImGuiWindowBase
 
         if (_loadedRoom == null)
         {
+            Title = "Palette editor";
             _usePaletteFromTemplate = false;
             _useEffectAFromTemplate = false;
             _useEffectBFromTemplate = false;
@@ -141,6 +182,7 @@ public class PaletteEditorMenu : ImGuiWindowBase
         }
 
         RoomSettings settings = _loadedRoom.roomSettings;
+        Title = "Palette editor - " + settings.name;
 
         _usePaletteFromTemplate = RoomHasTemplate && settings.pal == null;
         _useEffectAFromTemplate = RoomHasTemplate && settings.eColA == null;

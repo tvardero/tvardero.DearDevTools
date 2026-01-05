@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
