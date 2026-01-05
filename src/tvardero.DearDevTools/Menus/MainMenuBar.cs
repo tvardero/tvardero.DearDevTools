@@ -11,14 +11,21 @@ public class MainMenuBar : ImGuiDrawableBase
     private readonly MenuManager _menuManager;
     private readonly EndEscaperService _endEscaperService;
     private readonly GameStateService _gameStateService;
+    private readonly DearDevToolsPlugin _plugin;
     private bool _debugLogActive;
     private bool _debugMetricsActive;
 
-    public MainMenuBar(MenuManager menuManager, IServiceProvider serviceProvider, ILogger<MainMenuBar> logger, GameStateService gameStateService)
+    public MainMenuBar(
+        MenuManager menuManager,
+        IServiceProvider serviceProvider,
+        ILogger<MainMenuBar> logger,
+        GameStateService gameStateService,
+        DearDevToolsPlugin plugin)
         : base(logger: logger)
     {
         _menuManager = menuManager;
         _gameStateService = gameStateService;
+        _plugin = plugin;
         _endEscaperService = serviceProvider.GetRequiredService<EndEscaperService>();
     }
 
@@ -40,6 +47,12 @@ public class MainMenuBar : ImGuiDrawableBase
         {
             if (!_gameStateService.IsInGame) ImGui.BeginDisabled();
 
+            if (ImGui.BeginMenu("Menu"))
+            {
+                MenuBarMenu();
+                ImGui.EndMenu();
+            }
+
             if (ImGui.BeginMenu("Tools"))
             {
                 MenuBarTools();
@@ -59,6 +72,13 @@ public class MainMenuBar : ImGuiDrawableBase
 
         if (_debugLogActive) ImGui.ShowDebugLogWindow();
         if (_debugMetricsActive) ImGui.ShowMetricsWindow();
+    }
+
+    private void MenuBarMenu()
+    {
+        if (ImGui.MenuItem("Hide Dear Dev Tools UI", "Ctrl + H")) { _plugin.IsMainUiVisible = false; }
+
+        if (ImGui.MenuItem("Deactivate Dear Dev Tools", "Ctrl + O")) { _plugin.AreDearDevToolsActive = false; }
     }
 
     protected virtual void ProcessShortcuts()
@@ -82,9 +102,8 @@ public class MainMenuBar : ImGuiDrawableBase
 
         ImGui.Separator();
 
-        if (ImGui.MenuItem("ImGui debug logs", _debugLogActive)) _debugLogActive = !_debugLogActive;
-
-        if (ImGui.MenuItem("ImGui debug metrics", _debugMetricsActive)) _debugMetricsActive = !_debugMetricsActive;
+        ImGui.MenuItem("ImGui debug logs", null, ref _debugLogActive);
+        ImGui.MenuItem("ImGui debug metrics", null, ref _debugMetricsActive);
 
         ImGui.Separator();
 
