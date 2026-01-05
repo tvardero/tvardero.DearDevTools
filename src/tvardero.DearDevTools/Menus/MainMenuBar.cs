@@ -45,13 +45,13 @@ public class MainMenuBar : ImGuiDrawableBase
 
         if (ImGui.BeginMainMenuBar())
         {
-            if (!_gameStateService.IsInGame) ImGui.BeginDisabled();
-
             if (ImGui.BeginMenu("Menu"))
             {
                 MenuBarMenu();
                 ImGui.EndMenu();
             }
+
+            if (!_gameStateService.IsInGame) ImGui.BeginDisabled();
 
             if (ImGui.BeginMenu("Tools"))
             {
