@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tvardero.DearDevTools", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tvardero.MenuTests", "src\tvardero.MenuTests\tvardero.MenuTests.csproj", "{315256C2-A9EF-4057-9065-7E81BBF8BB22}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tvardero.TheInfernoSlug", "src\tvardero.TheInfernoSlug\tvardero.TheInfernoSlug.csproj", "{75E2C0A8-D795-40B8-8E1C-06616EA161AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,9 +33,14 @@ Global
 		{315256C2-A9EF-4057-9065-7E81BBF8BB22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{315256C2-A9EF-4057-9065-7E81BBF8BB22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{315256C2-A9EF-4057-9065-7E81BBF8BB22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75E2C0A8-D795-40B8-8E1C-06616EA161AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75E2C0A8-D795-40B8-8E1C-06616EA161AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75E2C0A8-D795-40B8-8E1C-06616EA161AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75E2C0A8-D795-40B8-8E1C-06616EA161AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{65C7BAD5-10BC-47BB-9DDD-AD1E48495088} = {9DF0903F-36DE-4F71-BE60-E43A7F8C5D91}
 		{315256C2-A9EF-4057-9065-7E81BBF8BB22} = {9DF0903F-36DE-4F71-BE60-E43A7F8C5D91}
+		{75E2C0A8-D795-40B8-8E1C-06616EA161AA} = {9DF0903F-36DE-4F71-BE60-E43A7F8C5D91}
 	EndGlobalSection
 EndGlobal

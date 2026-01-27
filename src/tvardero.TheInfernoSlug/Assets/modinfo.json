@@ -1,0 +1,17 @@
+﻿{
+  "id": "tvardero.TheInfernoSlug",
+  "name": "The Inferno slugcat",
+  "version": "0.0.1",
+  "authors": "tvardero",
+  "description": "New custom slugcat with fire capabilities.",
+  "requirements": [
+    "slime-cubed.slugbase"
+  ],
+  "requirements_names": [
+    "SlugBase"
+  ],
+  "tags": [
+    "Player", "Story"
+  ],
+  "checksum_override_version": false
+}
