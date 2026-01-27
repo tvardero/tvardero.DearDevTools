@@ -45,15 +45,18 @@ Steps:
 3. Run `dotnet tool restore` once after you have cloned the repository.
 4. Create `.env.local` file in the root of the repository, see `.env.local.example` as an example.
 5. Run one of the available commands:
-    - `dotnet build` - builds the project.
-    - `dotnet cake --target=Clean` - clears the `dist/` folder in repository and runs `dotnet clean`.
-    - `dotnet cake --target=PackMod` - build the project in `Debug` configuration and packs the mod into `dist/` folder
-      in repository.
-    - `dotnet cake --target=PackMod --configuration=Release` - same, but in `Release` configuration.
-    - `dotnet cake --target=CopyModToRW` - builds the project in `Debug` configuration and copies the mod into Rain
-      World mods folder. Requires `RAINWORLD_PATH` environment variable to be set, see `.env.local.example` for details.
-    - `dotnet cake --target=CopyModToRW --configuration=Release` - same, but in `Release` configuration.
-    - `dotnet cake` - same as `dotnet cake --target=CopyModToRW`.
+    - `dotnet build` - builds the solution.
+    - `dotnet build src/MyProject` - builds the project "MyProject";
+    - `dotnet cake --target Clean --project MyProject` - clears the `dist/MyProject` folder in repository and runs
+      `dotnet clean src/MyProject`.
+    - `dotnet cake --target PackMod --project MyProject --configuration Debug` - runs target "Clean", builds the project
+      at `src/MyProject` in `Debug` configuration and packs the mod into `dist/MyProject` folder in repository.
+    - `dotnet cake --target CopyModToRW  --project MyProject --configuration Debug` - runs target "PackMod" and copies
+      the mod into Rain World mods folder. Requires `RAINWORLD_PATH` environment variable to be set, see
+      `.env.local.example` for details.
+    - Default value for `--configuration` is `Release`;
+    - Default value for `--project` is `tvardero.DearDevTools`;
+    - Default value for `--target` is `CopyModToRW`.
 
 ## License
 

@@ -1,14 +1,14 @@
-var target = Argument("target", "Default");
+var target = Argument("target", "CopyModToRW");
 var configuration = Argument("configuration", "Debug");
 var rainWorldPath = Argument("rainWorldPath", string.Empty);
-
-var projectName = "tvardero.DearDevTools";
-var projectPath = $"./src/{projectName}";
-var outputPath = $"./dist/{projectName}";
+var projectName = Argument("project", "tvardero.DearDevTools");
 
 Task("Clean")
     .Does(() =>
 {
+    var projectPath = $"./src/{projectName}";
+    var outputPath = $"./dist/{projectName}";
+
     DotNetClean(projectPath);
 
     if (DirectoryExists(outputPath))
@@ -23,6 +23,8 @@ Task("PackMod")
     .IsDependentOn("Clean")
     .Does(() =>
 {
+    var projectPath = $"./src/{projectName}";
+    var outputPath = $"./dist/{projectName}";
     var pluginsPath = $"{outputPath}/plugins";
 
     DotNetPublish(projectPath, new DotNetPublishSettings
@@ -31,31 +33,19 @@ Task("PackMod")
         OutputDirectory = pluginsPath
     });
     Information($"Built and copied .dll files");
+    
+    var assetsSource = MakeAbsolute(new DirectoryPath($"{projectPath}/Assets"));
+    var assetsTarget = MakeAbsolute(new DirectoryPath($"{outputPath}/"));    
+    var assetSourceFiles = GetFiles($"{assetsSource}/**/*");
 
-    var modinfoSource = $"{projectPath}/modinfo.json";
-    var modinfoTarget = $"{outputPath}/modinfo.json";
-
-    if (FileExists(modinfoSource))
+    Information(assetsSource);
+    Information(assetsTarget);
+        
+    foreach (FilePath file in assetSourceFiles) 
     {
-        CopyFile(modinfoSource, modinfoTarget);
-        Information($"Copied modinfo.json");
-    }
-    else
-    {
-        Warning($"File not found: {modinfoSource}");
-    }
-
-    var thumbnailSource = $"{projectPath}/thumbnail.png";
-    var thumbnailTarget = $"{outputPath}/thumbnail.png";
-
-    if (FileExists(thumbnailSource))
-    {
-        CopyFile(thumbnailSource, thumbnailTarget);
-        Information($"Copied thumbnail.png");
-    }
-    else
-    {
-        Warning($"File not found: {thumbnailSource}");
+        var targetFilePath = new FilePath(file.ToString().Replace(assetsSource.ToString(), assetsTarget.ToString()));
+        CreateDirectory(targetFilePath.GetDirectory()); // Ensure directory exists
+        CopyFile(file, targetFilePath);
     }
     
     Information($"Done packing the mod");
@@ -95,12 +85,11 @@ Task("CopyModToRW")
         CleanDirectory(modPath);
     }
 
+    var outputPath = $"./dist/{projectName}";
+    
     CopyDirectory(outputPath, modPath);
     Information($"Copied packed mod to {modPath}");
 });
-
-Task("Default")
-    .IsDependentOn("CopyModToRW");
 
 RunTarget(target);
 
