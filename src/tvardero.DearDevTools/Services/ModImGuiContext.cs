@@ -25,11 +25,10 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
 
     public void Activate()
     {
-        if (!IsActive)
-        {
-            _logger.LogDebug($"Activating {nameof(ModImGuiContext)}");
-            ImGUIAPI.SwitchContext(this);
-        }
+        if (IsActive) return;
+
+        _logger.LogDebug($"Activating {nameof(ModImGuiContext)}");
+        ImGUIAPI.SwitchContext(this);
     }
 
     public void AddDrawable(ImGuiDrawableBase drawable)
@@ -45,7 +44,7 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
     public override bool BlockWMEvent()
     {
         if (_disposed) return false;
-        if (!_plugin.AreDearDevToolsActive) return false;
+        if (!_plugin.IsActivated) return false;
 
         bool isMainUiVisible = _plugin.IsMainUiVisible;
         return _renderList
@@ -56,11 +55,10 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
 
     public void Deactivate()
     {
-        if (IsActive)
-        {
-            _logger.LogDebug($"Deactivating {nameof(ModImGuiContext)}");
-            ImGUIAPI.SwitchContext(null);
-        }
+        if (!IsActive) return;
+
+        _logger.LogDebug($"Deactivating {nameof(ModImGuiContext)}");
+        ImGUIAPI.SwitchContext(null);
     }
 
     /// <inheritdoc />
@@ -88,7 +86,7 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
     public override void Render(ref IntPtr IDXGISwapChain, ref uint SyncInterval, ref uint Flags)
     {
         if (_disposed) return;
-        if (!_plugin.AreDearDevToolsActive) return;
+        if (!_plugin.IsActivated) return;
 
         SanitizeRenderList();
 
@@ -106,21 +104,23 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
                 _renderList.Remove(drawable);
             }
         }
-    }
 
-    public void SanitizeRenderList()
-    {
-        int countBefore = _renderList.Count;
+        return;
 
-        // remove null or disposed instances
-        _renderList.RemoveAll(d => d is not { IsDisposed: false });
+        void SanitizeRenderList()
+        {
+            int countBefore = _renderList.Count;
 
-        if (countBefore != _renderList.Count) _renderListSnapshot = null;
-    }
+            // remove disposed instances
+            _renderList.RemoveAll(d => d.IsDisposed);
 
-    private ImGuiDrawableBase[] GetRenderListSnapshot()
-    {
-        _renderListSnapshot ??= _renderList.ToArray();
-        return _renderListSnapshot;
+            if (countBefore != _renderList.Count) _renderListSnapshot = null;
+        }
+
+        ImGuiDrawableBase[] GetRenderListSnapshot()
+        {
+            _renderListSnapshot ??= _renderList.ToArray();
+            return _renderListSnapshot;
+        }
     }
 }

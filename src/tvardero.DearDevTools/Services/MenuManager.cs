@@ -1,38 +1,74 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using tvardero.DearDevTools.Components;
+using tvardero.DearDevTools.Menus;
 
 namespace tvardero.DearDevTools.Services;
 
 public class MenuManager
 {
+    private static readonly Type[] _criticalDrawables = [typeof(MainMenuBar), typeof(DearDevToolsEnabledOverlay)];
     private readonly ModImGuiContext _modImGuiContext;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger _logger;
 
-    public MenuManager(IServiceProvider serviceProvider, ILogger<MenuManager> logger)
+    public MenuManager(IServiceProvider serviceProvider, ILogger logger)
     {
-        _serviceProvider = serviceProvider;
         _modImGuiContext = serviceProvider.GetRequiredService<ModImGuiContext>();
+        _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
     public IReadOnlyList<ImGuiDrawableBase> AllDrawables => _modImGuiContext.RenderList;
 
-    public TDrawable CreateNew<TDrawable>(bool stealFocus = false)
+    public TDrawable CreateNew<TDrawable>()
     where TDrawable : ImGuiDrawableBase
     {
-        _modImGuiContext.SanitizeRenderList();
+        _logger.LogInformation("Creating new instance of type {DrawableType}", typeof(TDrawable));
 
-        TDrawable? first = _modImGuiContext.RenderList.OfType<TDrawable>().FirstOrDefault();
-        if (first is { AllowsMultipleInstances: false }) throw new InvalidOperationException("This drawable type does not allow multiple instances");
+        var drawable = CreateNew_Impl<TDrawable>();
+        if (AllDrawables.Contains(drawable)) throw new InvalidOperationException("Singleton instance cannot be created more than once.");
 
-        return CreateNew_Impl<TDrawable>(stealFocus);
+        _modImGuiContext.AddDrawable(drawable);
+        return drawable;
     }
 
-    public void Destroy<TDrawable>(TDrawable drawable)
+    public bool TryCreateNew<TDrawable>(out TDrawable? drawable)
     where TDrawable : ImGuiDrawableBase
     {
+        _logger.LogInformation("Attempting to create a new instance of type {DrawableType}", typeof(TDrawable));
+
+        drawable = CreateNew_Impl<TDrawable>();
+        if (AllDrawables.Contains(drawable))
+        {
+            drawable = null;
+            return false;
+        }
+
+        _modImGuiContext.AddDrawable(drawable);
+        return true;
+    }
+
+    public TDrawable GetFirstOrCreateNew<TDrawable>(IComparer<TDrawable>? comparer = null)
+    where TDrawable : ImGuiDrawableBase
+    {
+        var drawable = GetFirstOfType(comparer);
+        return drawable ?? CreateNew<TDrawable>();
+    }
+
+    public TDrawable GetLastOrCreateNew<TDrawable>(IComparer<TDrawable>? comparer = null)
+    where TDrawable : ImGuiDrawableBase
+    {
+        var drawable = GetLastOfType(comparer);
+        return drawable ?? CreateNew<TDrawable>();
+    }
+
+    public void Destroy(ImGuiDrawableBase drawable)
+    {
+        if (_criticalDrawables.Contains(drawable.GetType())) throw new InvalidOperationException("Destroying this drawable is not allowed.");
+
+        _logger.LogInformation("Destroying drawable {Drawable}", drawable);
+
         _modImGuiContext.RemoveDrawable(drawable);
         drawable.Dispose();
     }
@@ -40,63 +76,88 @@ public class MenuManager
     public void DestroyAllOfType<TDrawable>()
     where TDrawable : ImGuiDrawableBase
     {
-        _logger.LogInformation("Destroying all drawables of type {DrawableType}", typeof(TDrawable));
+        var toDestroy = AllDrawables
+            .Where(d => !d.IsDisposed)
+            .OfType<TDrawable>()
+            .Where(d => !_criticalDrawables.Contains(d.GetType()))
+            .ToArray();
 
-        TDrawable[] toDestroy = _modImGuiContext.RenderList.OfType<TDrawable>().ToArray();
-        foreach (TDrawable drawable in toDestroy) { Destroy(drawable); }
-    }
-
-    public TDrawable EnsureShown<TDrawable>(bool stealFocus = true)
-    where TDrawable : ImGuiDrawableBase
-    {
-        var drawable = GetFirstOrCreateNew<TDrawable>();
-
-        var window = drawable as ImGuiWindowBase;
-
-        if (window is { IsOpen: false }) window.Reopen();
-        drawable.Show();
-        if (stealFocus) window?.Focus();
-
-        return drawable;
-    }
-
-    public TDrawable GetFirstOrCreateNew<TDrawable>(bool stealFocus = false)
-    where TDrawable : ImGuiDrawableBase
-    {
-        _modImGuiContext.SanitizeRenderList();
-
-        TDrawable? drawable = _modImGuiContext.RenderList.OfType<TDrawable>().FirstOrDefault();
-        if (drawable != null) return drawable;
-
-        return CreateNew_Impl<TDrawable>(stealFocus);
+        foreach (TDrawable drawable in toDestroy) Destroy(drawable);
     }
 
     public void HideAllOfType<TDrawable>()
     where TDrawable : ImGuiDrawableBase
     {
-        _logger.LogInformation("Hiding all drawables of type {DrawableType}", typeof(TDrawable));
-
-        _modImGuiContext.SanitizeRenderList();
-
-        foreach (TDrawable drawable in _modImGuiContext.RenderList.OfType<TDrawable>()) { drawable.Hide(); }
+        foreach (TDrawable drawable in AllDrawables.Where(d => !d.IsDisposed).OfType<TDrawable>())
+        {
+            try { drawable.Hide(); }
+            catch (NotSupportedException)
+            {
+                // ignore   
+            }
+        }
     }
 
     public void ShowAllOfType<TDrawable>(bool show = true)
     where TDrawable : ImGuiDrawableBase
     {
-        if (show) _logger.LogInformation("Showing all drawables of type {DrawableType}", typeof(TDrawable));
-        else _logger.LogInformation("Hiding all drawables of type {DrawableType}", typeof(TDrawable));
-
-        _modImGuiContext.SanitizeRenderList();
-
-        foreach (TDrawable drawable in _modImGuiContext.RenderList.OfType<TDrawable>()) { drawable.Show(show); }
+        foreach (TDrawable drawable in AllDrawables.Where(d => !d.IsDisposed).OfType<TDrawable>())
+        {
+            try { drawable.Show(show); }
+            catch (NotSupportedException)
+            {
+                // ignore
+            }
+        }
     }
 
-    private TDrawable CreateNew_Impl<TDrawable>(bool stealFocus)
+    public void HideAll()
+    {
+        foreach (ImGuiDrawableBase drawable in AllDrawables.Where(d => !d.IsDisposed))
+        {
+            try { drawable.Hide(); }
+            catch (NotSupportedException)
+            {
+                // ignore
+            }
+        }
+    }
+
+    public void ShowAll(bool show = true)
+    {
+        foreach (ImGuiDrawableBase drawable in AllDrawables.Where(d => !d.IsDisposed))
+        {
+            try { drawable.Show(show); }
+            catch (NotSupportedException)
+            {
+                // ignore
+            }
+        }
+    }
+
+    public TDrawable? GetFirstOfType<TDrawable>(IComparer<TDrawable>? comparer = null)
     where TDrawable : ImGuiDrawableBase
     {
-        _logger.LogInformation("Creating new instance of type {DrawableType}", typeof(TDrawable));
+        TDrawable? first = comparer == null
+            ? AllDrawables.Where(d => !d.IsDisposed).OfType<TDrawable>().FirstOrDefault()
+            : AllDrawables.Where(d => !d.IsDisposed).OfType<TDrawable>().OrderBy(d => d, comparer).FirstOrDefault();
 
+        return first;
+    }
+
+    public TDrawable? GetLastOfType<TDrawable>(IComparer<TDrawable>? comparer = null)
+    where TDrawable : ImGuiDrawableBase
+    {
+        TDrawable? last = comparer == null
+            ? AllDrawables.Where(d => !d.IsDisposed).OfType<TDrawable>().LastOrDefault()
+            : AllDrawables.Where(d => !d.IsDisposed).OfType<TDrawable>().OrderBy(d => d, comparer).LastOrDefault();
+
+        return last;
+    }
+
+    private TDrawable CreateNew_Impl<TDrawable>()
+    where TDrawable : ImGuiDrawableBase
+    {
         TDrawable drawable;
         try { drawable = ActivatorUtilities.GetServiceOrCreateInstance<TDrawable>(_serviceProvider); }
         catch (Exception e)
@@ -104,10 +165,6 @@ public class MenuManager
             _logger.LogError(e, "Failed to create instance of {DrawableType}, did you register all necessary service types?", typeof(TDrawable));
             throw;
         }
-
-        _modImGuiContext.AddDrawable(drawable);
-
-        if (stealFocus && drawable is ImGuiWindowBase window) window.Focus();
 
         return drawable;
     }

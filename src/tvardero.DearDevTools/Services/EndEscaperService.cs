@@ -33,11 +33,7 @@ internal sealed class EndEscaperService
     {
         _logger.LogCritical("Escaping the end");
 
-        if (quick)
-        {
-            int pid = Process.GetCurrentProcess().Id;
-            Process.GetProcessById(pid).Kill();
-        }
+        if (quick) Process.GetCurrentProcess().Kill();
         else Utils.ForceCrash(ForcedCrashCategory.Abort);
 
         throw null!; // unreachable

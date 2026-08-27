@@ -8,16 +8,15 @@ namespace tvardero.DearDevTools.Components;
 [PublicAPI]
 public abstract class ImGuiDrawableBase : IDisposable
 {
-    protected ImGuiDrawableBase(bool allowsMultipleInstances = false, ILogger? logger = null)
+    protected ImGuiDrawableBase(ILogger? logger)
     {
         InstancesCounter++;
         Logger = logger ?? NullLogger.Instance;
-        AllowsMultipleInstances = allowsMultipleInstances;
     }
 
     public bool IsDisposed
     {
-        get => field;
+        get;
 
         protected set
         {
@@ -31,8 +30,6 @@ public abstract class ImGuiDrawableBase : IDisposable
             field = value;
         }
     }
-
-    public bool AllowsMultipleInstances { get; }
 
     public virtual bool IsVisible { get; set; } = true;
 
@@ -58,14 +55,9 @@ public abstract class ImGuiDrawableBase : IDisposable
     }
 #pragma warning restore CA1816
 
-    public void Hide()
-    {
-        ThrowIfDisposed();
+    public void Hide() => Show(false);
 
-        IsVisible = false;
-    }
-
-    public void Show(bool show = true)
+    public virtual void Show(bool show = true)
     {
         ThrowIfDisposed();
 

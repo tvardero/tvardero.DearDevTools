@@ -10,7 +10,6 @@ public class MainMenuBar : ImGuiDrawableBase
 {
     private readonly MenuManager _menuManager;
     private readonly EndEscaperService _endEscaperService;
-    private readonly GameStateService _gameStateService;
     private readonly DearDevToolsPlugin _plugin;
     private bool _debugLogActive;
     private bool _debugMetricsActive;
@@ -19,12 +18,10 @@ public class MainMenuBar : ImGuiDrawableBase
         MenuManager menuManager,
         IServiceProvider serviceProvider,
         ILogger<MainMenuBar> logger,
-        GameStateService gameStateService,
         DearDevToolsPlugin plugin)
         : base(logger: logger)
     {
         _menuManager = menuManager;
-        _gameStateService = gameStateService;
         _plugin = plugin;
         _endEscaperService = serviceProvider.GetRequiredService<EndEscaperService>();
     }
@@ -51,16 +48,6 @@ public class MainMenuBar : ImGuiDrawableBase
                 ImGui.EndMenu();
             }
 
-            if (!_gameStateService.IsInGame) ImGui.BeginDisabled();
-
-            if (ImGui.BeginMenu("Tools"))
-            {
-                MenuBarTools();
-                ImGui.EndMenu();
-            }
-
-            if (!_gameStateService.IsInGame) ImGui.EndDisabled();
-
             if (ImGui.BeginMenu("Help"))
             {
                 MenuBarHelp();
@@ -78,19 +65,19 @@ public class MainMenuBar : ImGuiDrawableBase
     {
         if (ImGui.MenuItem("Hide Dear Dev Tools UI", "Ctrl + H")) { _plugin.IsMainUiVisible = false; }
 
-        if (ImGui.MenuItem("Deactivate Dear Dev Tools", "Ctrl + O")) { _plugin.AreDearDevToolsActive = false; }
+        if (ImGui.MenuItem("Deactivate Dear Dev Tools", "Ctrl + O")) { _plugin.IsActivated = false; }
     }
 
     protected virtual void ProcessShortcuts()
     {
-        if (ImGui.Shortcut(ImGuiKey.F1, ImGuiInputFlags.RouteGlobal)) _menuManager.EnsureShown<HelpMenu>();
+        if (ImGui.Shortcut(ImGuiKey.F1, ImGuiInputFlags.RouteGlobal)) { } // TODO
     }
 
     private void MenuBarHelp()
     {
-        if (ImGui.MenuItem("How to use Dear Dev Tools?", "F1")) _menuManager.EnsureShown<HelpMenu>();
+        if (ImGui.MenuItem("How to use Dear Dev Tools?", "F1")) { } // TODO
 
-        if (ImGui.MenuItem("Whats new?")) _menuManager.EnsureShown<WhatsNewMenu>();
+        if (ImGui.MenuItem("Whats new?")) { } // TODO
 
         if (ImGui.MenuItem("Steam Workshop page")) Application.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=3417372413");
 
@@ -112,6 +99,6 @@ public class MainMenuBar : ImGuiDrawableBase
 
     private void MenuBarTools()
     {
-        if (ImGui.MenuItem("Palette editor")) _menuManager.CreateNew<PaletteEditorMenu>();
+        if (ImGui.MenuItem("Palette editor")) { } // TODO
     }
 }

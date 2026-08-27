@@ -18,10 +18,9 @@ public abstract class ImGuiWindowBase : ImGuiDrawableBase
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags.None,
         Vector2? initialSize = null,
         bool disposeOnClose = false,
-        bool allowMultipleInstances = false,
-        ILogger? logger = null) : base(allowMultipleInstances, logger)
+        ILogger? logger = null) : base(logger)
     {
-        Title = !title.Contains("##") && allowMultipleInstances ? $"{title}##{InstancesCounter}" : title;
+        Title = !title.Contains("##") ? $"{title}##{InstancesCounter}" : title;
         WindowFlags = windowFlags;
         _initialSize = initialSize ?? new Vector2(600, 400);
         _disposeOnClose = disposeOnClose;
@@ -55,7 +54,7 @@ public abstract class ImGuiWindowBase : ImGuiDrawableBase
 
             if (field == value) return;
 
-            if (!value.Contains("##") && AllowsMultipleInstances) value = value + "##" + InstancesCounter;
+            if (!value.Contains("##")) value = value + "##" + InstancesCounter;
             field = value;
         }
     }

@@ -16,7 +16,7 @@ namespace tvardero.DearDevTools;
 /// <summary>
 /// Dear Dev Tools mod.
 /// </summary>
-[BepInPlugin("tvardero.DearDevTools", "Dear Dev Tools", "0.0.7")]
+[BepInPlugin("tvardero.DearDevTools", "Dear Dev Tools", "0.0.8")]
 [BepInDependency("rwimgui")]
 [PublicAPI]
 public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
@@ -52,15 +52,15 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 
     /// <summary>
     /// Main UI visible. Includes main menu bar, many menus and tools like room info panel, room settings panel and others.
-    /// Pinned menus and tools will remain to be visible while <see cref="AreDearDevToolsActive" /> is true.<br />
+    /// Pinned menus and tools will remain to be visible while <see cref="IsActivated" /> is true.<br />
     /// Mouse cursor will be visible as well when <see cref="IsMainUiVisible" /> is true and hidden when false.
     /// </summary>
     /// <remarks>
-    /// Setting this to true will automatically set <see cref="AreDearDevToolsActive" /> to true as well.
+    /// Setting this to true will automatically set <see cref="IsActivated" /> to true as well.
     /// </remarks>
     public bool IsMainUiVisible
     {
-        get => field && AreDearDevToolsActive;
+        get => field && IsActivated;
 
         set
         {
@@ -70,11 +70,11 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 
             if (value)
             {
-                AreDearDevToolsActive = true;
+                IsActivated = true;
                 _modImGuiContext.Activate();
             }
 
-            ShowMouseCursor(value);
+            Cursor.visible = value;
         }
     }
 
@@ -84,7 +84,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     /// <remarks>
     /// Setting this to false will automatically set <see cref="IsMainUiVisible" /> to false.
     /// </remarks>
-    public bool AreDearDevToolsActive
+    public bool IsActivated
     {
         get => field || IsMainUiVisible;
 
@@ -109,7 +109,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     /// </summary>
     /// <remarks>
     /// Do not hold on value of this property during mod initialization.
-    /// Service provider might be rebuilt multiple times by other dependent mods by call to <see cref="RebuildServiceProvider" />.<br />
+    /// Service provider might be rebuilt multiple times by other dependent mods via call to <see cref="RebuildServiceProvider" />.<br />
     /// Use <see cref="ConfigureServiceProvider" /> as a callback that is executed each time <see cref="RebuildServiceProvider" /> is called.
     /// </remarks>
     public IServiceProvider ServiceProvider => _serviceProvider;
@@ -119,10 +119,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     {
         if (_instance != this) return;
 
-        try { _updateEvent.Fire(); }
-        catch (AggregateException e) { Logger.LogWarning(e, "Some update handler failed"); }
-
-        // todo: make shortcuts configurable
+        // TODO: make shortcuts configurable
         bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         bool altJustPressed = Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt);
         bool escPressed = Input.GetKey(KeyCode.Escape);
@@ -136,13 +133,13 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 
         if (ctrlPressed && oJustPressed)
         {
-            AreDearDevToolsActive = !AreDearDevToolsActive;
-            if (!AreDearDevToolsActive) switchedCursorVisibility = true;
+            IsActivated = !IsActivated;
+            if (!IsActivated) switchedCursorVisibility = true;
 
-            Logger.LogDebug("Dear Dev Tools active: {AreDearDevToolsActive}", AreDearDevToolsActive);
+            Logger.LogDebug("Dear Dev Tools active: {AreDearDevToolsActive}", IsActivated);
         }
 
-        if (AreDearDevToolsActive && ctrlPressed && hJustPressed)
+        if (IsActivated && ctrlPressed && hJustPressed)
         {
             IsMainUiVisible = !IsMainUiVisible;
             switchedCursorVisibility = true;
@@ -150,7 +147,17 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
             Logger.LogDebug("Dear Dev Tools main UI visible: {IsMainUiVisible}", IsMainUiVisible);
         }
 
-        if (!switchedCursorVisibility && AreDearDevToolsActive && altJustPressed) ShowMouseCursor(!Cursor.visible);
+        if (!switchedCursorVisibility && IsActivated && altJustPressed) Cursor.visible = !Cursor.visible;
+
+        try { _updateEvent.Fire(); }
+        catch (AggregateException e)
+        {
+            // ignore
+            // do not log in RELEASE, as this is called every frame
+#if DEBUG
+            Logger.LogDebug(e, "Some update handler failed");
+#endif
+        }
     }
 
     [UsedImplicitly]
@@ -166,12 +173,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     private void OnDisable()
     {
         Logger.LogInformation("OnDisable called, deinitializing mod instance");
-
-        if (_instance == this) _instance = null;
-
-        On.RainWorld.OnModsInit -= OnModsInit;
-
-        _modImGuiContext.Dispose();
+        Deinitialize();
     }
 
     /// <summary>
@@ -180,7 +182,11 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     public void Dispose()
     {
         Logger.LogInformation("Dispose called, deinitializing mod instance");
+        Deinitialize();
+    }
 
+    private void Deinitialize()
+    {
         if (_instance == this) _instance = null;
 
         On.RainWorld.OnModsInit -= OnModsInit;
@@ -196,29 +202,6 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     public IDisposable RegisterOnUpdate(Action handler)
     {
         return _updateEvent.Register(handler);
-    }
-
-    /// <summary>
-    /// Shows mouse cursor.
-    /// </summary>
-    /// <remarks>
-    /// Cursor is shown automatically when <see cref="IsMainUiVisible" /> is true, and hidden automatically when false.
-    /// </remarks>
-    /// <param name="show"> Show or hide? </param>
-    public static void ShowMouseCursor(bool show = true)
-    {
-        Cursor.visible = show;
-    }
-
-    /// <summary>
-    /// Hides mouse cursor.
-    /// </summary>
-    /// <remarks>
-    /// Cursor is shown automatically when <see cref="IsMainUiVisible" /> is true, and hidden automatically when false.
-    /// </remarks>
-    public static void HideMouseCursor()
-    {
-        Cursor.visible = false;
     }
 
     private void OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
@@ -263,16 +246,18 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     /// </summary>
     public void RebuildServiceProvider()
     {
-        Logger.LogInformation("Rebuilding service provider");
-
         // NOTE: multiple downstream dependents might call this method multiple times 
+        Logger.LogInformation("Rebuilding service provider");
 
         var serviceCollection = new ServiceCollection();
 
         foreach (Action<IServiceCollection> configure in _configureServiceCollection)
         {
             try { configure(serviceCollection); }
-            catch (Exception e) { Logger.LogError(e, "Error while executing service collection configure action (pre-build)"); }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error while executing service collection configure action (pre-build). This action will be skipped.");
+            }
         }
 
         ConfigureDefaults(serviceCollection);
@@ -280,7 +265,8 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         ServiceProvider serviceProvider;
         try
         {
-            serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+            serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions
+                { ValidateOnBuild = true, ValidateScopes = true });
         }
         catch (Exception e)
         {
@@ -291,7 +277,10 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         foreach (Action<IServiceProvider> configure in _configureServiceProvider)
         {
             try { configure(serviceProvider); }
-            catch (Exception e) { Logger.LogError(e, "Error while executing service provider configure action (post-build)"); }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error while executing service provider configure action (post-build). This action will be skipped.");
+            }
         }
 
         // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
@@ -306,20 +295,21 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         _menuManager.CreateNew<MainMenuBar>();
 
 #if DEBUG
-        AreDearDevToolsActive = true;
+        IsActivated = true;
         IsMainUiVisible = true;
 #else
-        AreDearDevToolsActive = false;
-        IsMainUiVisible = false;
+            AreDearDevToolsActive = false;
+            IsMainUiVisible = false;
 #endif
     }
 
     private void ConfigureDefaults(ServiceCollection serviceCollection)
     {
+        // TODO: need another way to configure
 #if DEBUG
         var minimumLogLevel = LogLevel.Trace;
 #else
-        var minimumLogLevel = LogLevel.Information;
+        var minimumLogLevel = LogLevel.Debug;
 #endif
 
         // no override allowed:
@@ -333,18 +323,13 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         // override allowed:
         serviceCollection.TryAddSingleton<DearDevToolsEnabledOverlay>();
         serviceCollection.TryAddSingleton<MainMenuBar>();
-        serviceCollection.TryAddSingleton<HelpMenu>();
-        serviceCollection.TryAddSingleton<WhatsNewMenu>();
-        serviceCollection.TryAddSingleton<PaletteService>();
-        serviceCollection.TryAddSingleton<GameStateService>();
-        serviceCollection.TryAddTransient<PaletteEditorMenu>();
     }
 
     private void Initialize()
     {
-        Logger.LogInformation("Initializing mod instance");
-
         if (_instance == this) return;
+
+        Logger.LogInformation("Initializing mod instance");
 
         try { RebuildServiceProvider(); }
         catch (Exception e)

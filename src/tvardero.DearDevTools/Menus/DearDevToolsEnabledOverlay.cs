@@ -8,13 +8,11 @@ namespace tvardero.DearDevTools.Menus;
 public class DearDevToolsEnabledOverlay : ImGuiDrawableBase
 {
     private readonly DearDevToolsPlugin _plugin;
-    private readonly GameStateService _gameStateService;
 
-    public DearDevToolsEnabledOverlay(DearDevToolsPlugin plugin, GameStateService gameStateService, ILogger<DearDevToolsEnabledOverlay> logger)
+    public DearDevToolsEnabledOverlay(DearDevToolsPlugin plugin, ILogger<DearDevToolsEnabledOverlay> logger)
         : base(logger: logger)
     {
         _plugin = plugin;
-        _gameStateService = gameStateService;
     }
 
     /// <inheritdoc />

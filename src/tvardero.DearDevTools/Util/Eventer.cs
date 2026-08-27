@@ -12,14 +12,15 @@ public class Eventer
     /// <summary>
     /// Fires the event.
     /// </summary>
+    /// <param name="failFast">Stop execution on first exception.</param>
     /// <exception cref="AggregateException"> One or more subscribed handlers threw an exception. </exception>
-    public void Fire()
+    public void Fire(bool failFast = false)
     {
         List<Exception> exceptions = [];
         foreach (Action? handler in _handlers)
         {
             try { handler(); }
-            catch (Exception ex) { exceptions.Add(ex); }
+            catch (Exception ex) when (!failFast) { exceptions.Add(ex); }
         }
 
         if (exceptions.Count > 0) throw new AggregateException(exceptions);
@@ -44,7 +45,7 @@ public class Eventer
     private class Unsubscriber : IDisposable
     {
         private readonly WeakReference<List<Action>> _handlersWeak;
-        private readonly Action _handler;
+        private Action _handler;
         private bool _disposed;
 
         public Unsubscriber(WeakReference<List<Action>> handlersWeak, Action handler)
@@ -65,6 +66,7 @@ public class Eventer
 
             handlers.Remove(_handler);
             _disposed = true;
+            _handler = null!;
             GC.SuppressFinalize(this);
         }
     }
@@ -82,14 +84,15 @@ public class Eventer<TArgument>
     /// Fires the event.
     /// </summary>
     /// <param name="argument"> Argument of the event. </param>
+    /// <param name="failFast">Stop execution on first exception.</param>
     /// <exception cref="AggregateException"> One or more subscribed handlers threw an exception. </exception>
-    public void Fire(TArgument argument)
+    public void Fire(TArgument argument, bool failFast = false)
     {
         List<Exception> exceptions = [];
         foreach (Action<TArgument>? handler in _handlers)
         {
             try { handler(argument); }
-            catch (Exception ex) { exceptions.Add(ex); }
+            catch (Exception ex) when (!failFast) { exceptions.Add(ex); }
         }
 
         if (exceptions.Count > 0) throw new AggregateException(exceptions);
@@ -114,7 +117,7 @@ public class Eventer<TArgument>
     private class Unsubscriber : IDisposable
     {
         private readonly WeakReference<List<Action<TArgument>>> _handlersWeak;
-        private readonly Action<TArgument> _handler;
+        private Action<TArgument> _handler;
         private bool _disposed;
 
         public Unsubscriber(WeakReference<List<Action<TArgument>>> handlersWeak, Action<TArgument> handler)
@@ -135,6 +138,7 @@ public class Eventer<TArgument>
 
             handlers.Remove(_handler);
             _disposed = true;
+            _handler = null!;
             GC.SuppressFinalize(this);
         }
     }
