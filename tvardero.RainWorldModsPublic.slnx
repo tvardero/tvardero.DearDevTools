@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/tvardero.DearDevTools/tvardero.DearDevTools.csproj" />
+    <Project Path="src/tvardero.MenuTests/tvardero.MenuTests.csproj" />
+  </Folder>
+  <Folder Name="/_sln_root/">
+    <File Path=".env.local" />
+    <File Path=".gitignore" />
+    <File Path="build.cake" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>
