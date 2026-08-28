@@ -16,9 +16,9 @@ public abstract class ImGuiWindowWithSideMenuBase : ImGuiWindowBase
 
     public bool IsSideMenuCollapsed { get; set; }
 
-    protected abstract void OnDrawSideMenu();
-
     protected abstract void OnDrawBody();
+
+    protected abstract void OnDrawSideMenu();
 
     /// <inheritdoc />
     protected sealed override void OnDrawWindowContent()

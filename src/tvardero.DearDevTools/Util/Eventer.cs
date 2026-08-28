@@ -12,7 +12,7 @@ public class Eventer
     /// <summary>
     /// Fires the event.
     /// </summary>
-    /// <param name="failFast">Stop execution on first exception.</param>
+    /// <param name="failFast"> Stop execution on first exception. </param>
     /// <exception cref="AggregateException"> One or more subscribed handlers threw an exception. </exception>
     public void Fire(bool failFast = false)
     {
@@ -84,7 +84,7 @@ public class Eventer<TArgument>
     /// Fires the event.
     /// </summary>
     /// <param name="argument"> Argument of the event. </param>
-    /// <param name="failFast">Stop execution on first exception.</param>
+    /// <param name="failFast"> Stop execution on first exception. </param>
     /// <exception cref="AggregateException"> One or more subscribed handlers threw an exception. </exception>
     public void Fire(TArgument argument, bool failFast = false)
     {

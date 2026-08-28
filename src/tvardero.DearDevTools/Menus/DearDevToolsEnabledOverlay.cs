@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 using Microsoft.Extensions.Logging;
 using tvardero.DearDevTools.Components;
-using tvardero.DearDevTools.Services;
 
 namespace tvardero.DearDevTools.Menus;
 
@@ -9,8 +8,7 @@ public class DearDevToolsEnabledOverlay : ImGuiDrawableBase
 {
     private readonly DearDevToolsPlugin _plugin;
 
-    public DearDevToolsEnabledOverlay(DearDevToolsPlugin plugin, ILogger<DearDevToolsEnabledOverlay> logger)
-        : base(logger: logger)
+    public DearDevToolsEnabledOverlay(DearDevToolsPlugin plugin, ILogger<DearDevToolsEnabledOverlay> logger) : base(logger)
     {
         _plugin = plugin;
     }
@@ -46,6 +44,7 @@ public class DearDevToolsEnabledOverlay : ImGuiDrawableBase
 
         ImGui.Text("Ctrl+O to enable/disable Dear Dev Tools");
         ImGui.Text("Ctrl+H to open/close UI");
+        ImGui.Text("Alt to toggle cursor visibility");
 
 #if DEBUG
         ImGui.Separator();

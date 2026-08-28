@@ -16,6 +16,6 @@ public class BadMenu : ImGuiWindowBase
     /// <inheritdoc />
     protected override void OnDrawWindowContent()
     {
-        if (DateTime.Now >= _crashAt) { ImGui.EndDisabled(); }
+        if (DateTime.Now >= _crashAt) ImGui.EndDisabled();
     }
 }

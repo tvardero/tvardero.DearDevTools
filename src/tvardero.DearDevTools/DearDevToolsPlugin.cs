@@ -23,8 +23,6 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 {
     private static DearDevToolsPlugin? _instance;
     private static bool _skipOnModsInit;
-    private static readonly List<Action<IServiceCollection>> _configureServiceCollection = [];
-    private static readonly List<Action<IServiceProvider>> _configureServiceProvider = [];
     private readonly Eventer _updateEvent = new();
     private EndEscaperService _endEscaperService = null!;
     private MenuManager _menuManager = null!;
@@ -65,15 +63,12 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         {
             if (value == field) return;
 
-            field = value;
-
-            if (value)
-            {
-                IsActivated = true;
-                _modImGuiContext.Activate();
-            }
+            if (value) IsActivated = true;
 
             Cursor.visible = value;
+
+            field = value;
+            Logger.LogDebug("Dear Dev Tools main UI visible: {IsMainUiVisible}", value);
         }
     }
 
@@ -91,26 +86,21 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         {
             if (value == field) return;
 
-            if (!value)
+            if (value) _modImGuiContext.Activate();
+            else
             {
-                _modImGuiContext.Deactivate();
                 IsMainUiVisible = false;
+                _modImGuiContext.Deactivate();
             }
 
             field = value;
-
-            if (value) _modImGuiContext.Activate();
+            Logger.LogDebug("Dear Dev Tools active: {AreDearDevToolsActive}", value);
         }
     }
 
     /// <summary>
     /// Service provider used to resolve services and instances of menus.
     /// </summary>
-    /// <remarks>
-    /// Do not hold on value of this property during mod initialization.
-    /// Service provider might be rebuilt multiple times by other dependent mods via call to <see cref="RebuildServiceProvider" />.<br />
-    /// Use <see cref="ConfigureServiceProvider" /> as a callback that is executed each time <see cref="RebuildServiceProvider" /> is called.
-    /// </remarks>
     public IServiceProvider ServiceProvider => _serviceProvider;
 
     [UsedImplicitly]
@@ -118,7 +108,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     {
         if (_instance != this) return;
 
-        // TODO: make shortcuts configurable
+        // TODO: make global shortcuts configurable
         bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         bool altJustPressed = Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt);
         bool escPressed = Input.GetKey(KeyCode.Escape);
@@ -126,36 +116,22 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         bool hJustPressed = Input.GetKeyDown(KeyCode.H);
         bool oJustPressed = Input.GetKeyDown(KeyCode.O);
 
-        bool switchedCursorVisibility = false;
-
         if (escPressed && endPressed) _endEscaperService.EscapeTheEnd();
 
-        if (ctrlPressed && oJustPressed)
+        if (ctrlPressed && oJustPressed) IsActivated = !IsActivated;
+
+        if (IsActivated && ctrlPressed && hJustPressed) IsMainUiVisible = !IsMainUiVisible;
+
+        if (IsActivated && !IsMainUiVisible && altJustPressed)
         {
-            IsActivated = !IsActivated;
-            if (!IsActivated) switchedCursorVisibility = true;
-
-            Logger.LogDebug("Dear Dev Tools active: {AreDearDevToolsActive}", IsActivated);
+            Logger.LogDebug("Switching cursor visibility");
+            Cursor.visible = !Cursor.visible;
         }
-
-        if (IsActivated && ctrlPressed && hJustPressed)
-        {
-            IsMainUiVisible = !IsMainUiVisible;
-            switchedCursorVisibility = true;
-
-            Logger.LogDebug("Dear Dev Tools main UI visible: {IsMainUiVisible}", IsMainUiVisible);
-        }
-
-        if (!switchedCursorVisibility && IsActivated && altJustPressed) Cursor.visible = !Cursor.visible;
 
         try { _updateEvent.Fire(); }
-        catch (AggregateException e)
+        catch
         {
             // ignore
-            // do not log in RELEASE, as this is called every frame
-#if DEBUG
-            Logger.LogDebug(e, "Some update handler failed");
-#endif
         }
     }
 
@@ -186,12 +162,10 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 
     private void Deinitialize()
     {
-        if (_instance == this) _instance = null;
-
         Logger.LogInformation("Deinitializing mod instance");
 
+        if (_instance == this) _instance = null;
         On.RainWorld.OnModsInit -= OnModsInit;
-
         _serviceProvider.Dispose();
 
         Logger.LogInformation("Deinitialization complete. Goodbye!");
@@ -215,61 +189,20 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     }
 
     /// <summary>
-    /// Register or override services for service provider.<br />
-    /// After registering all services, call <see cref="RebuildServiceProvider" /> to rebuild service provider.
-    /// </summary>
-    /// <remarks>
-    /// Dear Dev Tools does not use Scoped lifetime, it uses only Singleton and Transient.
-    /// If you want to use Scoped lifetime - go ahead, but note that you need to handle scopes yourself.
-    /// </remarks>
-    /// <param name="configure"> Configure action. </param>
-    /// <exception cref="ArgumentNullException"> Configure action is null. </exception>
-    public static void ConfigureServiceCollection(Action<IServiceCollection> configure)
-    {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-
-        if (!_configureServiceCollection.Contains(configure)) _configureServiceCollection.Add(configure);
-    }
-
-    /// <summary>
-    /// Register callback to resolve services from rebuilt service provider and additionally configure them.<br />
-    /// Called everytime service provider is rebuilt by <see cref="RebuildServiceProvider" /> method.
-    /// </summary>
-    /// <param name="configure"> Configure action. </param>
-    /// <exception cref="ArgumentNullException"> Configure action is null. </exception>
-    public static void ConfigureServiceProvider(Action<IServiceProvider> configure)
-    {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-
-        if (!_configureServiceProvider.Contains(configure)) _configureServiceProvider.Add(configure);
-    }
-
-    /// <summary>
     /// Rebuilds service provider. Resets the Dear Dev Tools mod.
     /// </summary>
-    public void RebuildServiceProvider()
+    public ServiceProvider RebuildServiceProvider()
     {
         // NOTE: multiple downstream dependents might call this method multiple times 
         Logger.LogDebug("Rebuilding service provider");
 
         var serviceCollection = new ServiceCollection();
-
-        foreach (Action<IServiceCollection> configure in _configureServiceCollection)
-        {
-            try { configure(serviceCollection); }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Error while executing service collection configure action (pre-build). This action will be skipped.");
-            }
-        }
-
         ConfigureDefaults(serviceCollection);
 
         ServiceProvider serviceProvider;
         try
         {
-            serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions
-                { ValidateOnBuild = true, ValidateScopes = true });
+            serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         }
         catch (Exception e)
         {
@@ -277,25 +210,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
             throw;
         }
 
-        foreach (Action<IServiceProvider> configure in _configureServiceProvider)
-        {
-            try { configure(serviceProvider); }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Error while executing service provider configure action (post-build). This action will be skipped.");
-            }
-        }
-
-        // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
-        _serviceProvider?.Dispose();
-        _serviceProvider = serviceProvider;
-
-        _modImGuiContext = _serviceProvider.GetRequiredService<ModImGuiContext>();
-        _menuManager = _serviceProvider.GetRequiredService<MenuManager>();
-        _endEscaperService = _serviceProvider.GetRequiredService<EndEscaperService>();
-
-        _menuManager.CreateNew<DearDevToolsEnabledOverlay>();
-        _menuManager.CreateNew<MainMenuBar>();
+        return serviceProvider;
     }
 
     private void ConfigureDefaults(ServiceCollection serviceCollection)
@@ -325,11 +240,20 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     {
         if (_instance == this) return;
 
+        if (_instance != null) throw new InvalidOperationException("Another mod instance is already running");
+
         Logger.LogInformation("Initializing mod instance");
 
         try
         {
-            RebuildServiceProvider();
+            _serviceProvider = RebuildServiceProvider();
+
+            _modImGuiContext = _serviceProvider.GetRequiredService<ModImGuiContext>();
+            _menuManager = _serviceProvider.GetRequiredService<MenuManager>();
+            _endEscaperService = _serviceProvider.GetRequiredService<EndEscaperService>();
+
+            _menuManager.CreateNew<DearDevToolsEnabledOverlay>();
+            _menuManager.CreateNew<MainMenuBar>();
 
 #if DEBUG
             IsActivated = true;
@@ -346,6 +270,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         }
 
         _instance = this;
+
         Logger.LogInformation("Initialization complete");
     }
 }

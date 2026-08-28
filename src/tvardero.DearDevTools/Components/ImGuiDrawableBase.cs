@@ -55,7 +55,10 @@ public abstract class ImGuiDrawableBase : IDisposable
     }
 #pragma warning restore CA1816
 
-    public void Hide() => Show(false);
+    public void Hide()
+    {
+        Show(false);
+    }
 
     public virtual void Show(bool show = true)
     {

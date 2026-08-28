@@ -31,8 +31,9 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
         _logger.LogDebug($"Activating {nameof(ModImGuiContext)}");
         ImGUIAPI.SwitchContext(this);
 
-        var io = ImGui.GetIO();
+        ImGuiIOPtr io = ImGui.GetIO();
         io.ConfigErrorRecoveryEnableAssert = false; // to prevent game instantly crashing on bad ImGui call
+        io.MouseDrawCursor = false; // we use native cursor, controlled by "Cursor.visible"
     }
 
     public void AddDrawable(ImGuiDrawableBase drawable)
@@ -116,20 +117,27 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
 
         return;
 
-        void SanitizeRenderList()
-        {
-            int countBefore = _renderList.Count;
-
-            // remove disposed instances
-            _renderList.RemoveAll(d => d.IsDisposed);
-
-            if (countBefore != _renderList.Count) _renderListSnapshot = null;
-        }
-
         ImGuiDrawableBase[] GetRenderListSnapshot()
         {
             _renderListSnapshot ??= _renderList.ToArray();
             return _renderListSnapshot;
         }
+    }
+
+    private void SanitizeRenderList()
+    {
+        bool hasChanged = false;
+
+        foreach (ImGuiDrawableBase drawable in _renderList.ToArray())
+        {
+            if (!drawable.IsDisposed) continue;
+
+            _renderList.Remove(drawable);
+            hasChanged = true;
+
+            _logger.LogDebug("Disposed drawable {Drawable} was removed from render list during sweep", drawable);
+        }
+
+        if (hasChanged) _renderListSnapshot = null;
     }
 }

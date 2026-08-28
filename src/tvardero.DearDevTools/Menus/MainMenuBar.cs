@@ -20,7 +20,7 @@ public class MainMenuBar : ImGuiDrawableBase
         IServiceProvider serviceProvider,
         ILogger<MainMenuBar> logger,
         DearDevToolsPlugin plugin)
-        : base(logger: logger)
+        : base(logger)
     {
         _menuManager = menuManager;
         _plugin = plugin;
@@ -70,13 +70,13 @@ public class MainMenuBar : ImGuiDrawableBase
 
     private void MenuBarMenu()
     {
-        if (ImGui.MenuItem("Bad menu")) { _menuManager.CreateNew<BadMenu>(); }
+        if (ImGui.MenuItem("Bad menu")) _menuManager.CreateNew<BadMenu>();
 
         ImGui.Separator();
 
-        if (ImGui.MenuItem("Hide Dear Dev Tools UI", "Ctrl + H")) { _plugin.IsMainUiVisible = false; }
+        if (ImGui.MenuItem("Hide Dear Dev Tools UI", "Ctrl + H")) _plugin.IsMainUiVisible = false;
 
-        if (ImGui.MenuItem("Deactivate Dear Dev Tools", "Ctrl + O")) { _plugin.IsActivated = false; }
+        if (ImGui.MenuItem("Deactivate Dear Dev Tools", "Ctrl + O")) _plugin.IsActivated = false;
     }
 
     private void MenuBarHelp()
