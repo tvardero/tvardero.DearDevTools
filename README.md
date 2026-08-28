@@ -18,7 +18,9 @@ After adding `winhttp` library, be sure to **UNLOAD ALL** mods in Remix menu, re
 
 > I'm playing on macOS / Linux and have a black immovable screen in front / behind the game.
 
-Ensure you are running the game with Proton version 9.0, not Experimental, not Hotfix. Changing Proton version might
+> I'm playing on macOS / Linux, other mods work, but I'm unable to get ImGUI mod working.
+
+Ensure you are running the game with Proton version 9.0, not Experimental, not Hotfix, not any other version. Changing Proton version might
 reset your wineconfig, re-add `winhttp` library if needed (see previous question).
 
 ## Build

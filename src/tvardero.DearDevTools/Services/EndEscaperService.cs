@@ -27,7 +27,10 @@ internal sealed class EndEscaperService
     /// <remarks>
     /// Crashes the game intentionally.
     /// </remarks>
-    /// <param name="quick"> Crash the game without Unity crash handler (using <c> kill PID </c>). </param>
+    /// <param name="quick">
+    /// Crash the game without Unity crash handler (using <c> kill PID </c>).
+    /// Might result in logs not being flushed completely.
+    /// </param>
     [DoesNotReturn]
     public void EscapeTheEnd(bool quick = false)
     {

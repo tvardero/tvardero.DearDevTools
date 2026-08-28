@@ -10,9 +10,9 @@ public class MenuManager
     private static readonly Type[] _criticalDrawables = [typeof(MainMenuBar), typeof(DearDevToolsEnabledOverlay)];
     private readonly ModImGuiContext _modImGuiContext;
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger _logger;
+    private readonly ILogger<MenuManager> _logger;
 
-    public MenuManager(IServiceProvider serviceProvider, ILogger logger)
+    public MenuManager(IServiceProvider serviceProvider, ILogger<MenuManager> logger)
     {
         _modImGuiContext = serviceProvider.GetRequiredService<ModImGuiContext>();
         _serviceProvider = serviceProvider;
@@ -27,7 +27,11 @@ public class MenuManager
         _logger.LogInformation("Creating new instance of type {DrawableType}", typeof(TDrawable));
 
         var drawable = CreateNew_Impl<TDrawable>();
-        if (AllDrawables.Contains(drawable)) throw new InvalidOperationException("Singleton instance cannot be created more than once.");
+        if (AllDrawables.Contains(drawable))
+        {
+            _logger.LogDebug("The same instance is already present in drawables list");
+            throw new InvalidOperationException("Singleton instance cannot be created more than once.");
+        }
 
         _modImGuiContext.AddDrawable(drawable);
         return drawable;
@@ -38,9 +42,17 @@ public class MenuManager
     {
         _logger.LogInformation("Attempting to create a new instance of type {DrawableType}", typeof(TDrawable));
 
-        drawable = CreateNew_Impl<TDrawable>();
+        try { drawable = CreateNew_Impl<TDrawable>(); }
+        catch (Exception e)
+        {
+            _logger.LogDebug(e, "Failed to create instance of {DrawableType}", typeof(TDrawable));
+            drawable = null;
+            return false;
+        }
+
         if (AllDrawables.Contains(drawable))
         {
+            _logger.LogDebug("The same instance is already present in drawables list");
             drawable = null;
             return false;
         }

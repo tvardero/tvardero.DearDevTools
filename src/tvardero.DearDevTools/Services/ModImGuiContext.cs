@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using RWIMGUI.API;
 using tvardero.DearDevTools.Components;
+using tvardero.DearDevTools.Menus;
 
 namespace tvardero.DearDevTools.Services;
 
@@ -29,6 +30,9 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
 
         _logger.LogDebug($"Activating {nameof(ModImGuiContext)}");
         ImGUIAPI.SwitchContext(this);
+
+        var io = ImGui.GetIO();
+        io.ConfigErrorRecoveryEnableAssert = false; // to prevent game instantly crashing on bad ImGui call
     }
 
     public void AddDrawable(ImGuiDrawableBase drawable)
@@ -98,9 +102,14 @@ internal sealed class ModImGuiContext : IMGUIContext, IDisposable
         foreach (ImGuiDrawableBase drawable in toDraw)
         {
             try { drawable.Draw(); }
-            catch (Exception e)
+            catch (Exception e) when (drawable is MainMenuBar or DearDevToolsEnabledOverlay)
             {
-                _logger.LogError(e, "Drawable {Drawable} threw an exception during rendering, removing drawable from render list", drawable);
+                _logger.LogCritical(e, "Critical drawable {Drawable} threw an exception during rendering");
+                throw;
+            }
+            catch (Exception e) when (drawable is not (MainMenuBar or DearDevToolsEnabledOverlay))
+            {
+                _logger.LogWarning(e, "Drawable {Drawable} threw an exception during rendering, removing drawable from render list", drawable);
                 _renderList.Remove(drawable);
             }
         }

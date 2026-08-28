@@ -13,6 +13,7 @@ public class MainMenuBar : ImGuiDrawableBase
     private readonly DearDevToolsPlugin _plugin;
     private bool _debugLogActive;
     private bool _debugMetricsActive;
+    private bool _demoWindowActive;
 
     public MainMenuBar(
         MenuManager menuManager,
@@ -57,20 +58,25 @@ public class MainMenuBar : ImGuiDrawableBase
             ImGui.EndMainMenuBar();
         }
 
+        if (_demoWindowActive) ImGui.ShowDemoWindow();
         if (_debugLogActive) ImGui.ShowDebugLogWindow();
         if (_debugMetricsActive) ImGui.ShowMetricsWindow();
-    }
-
-    private void MenuBarMenu()
-    {
-        if (ImGui.MenuItem("Hide Dear Dev Tools UI", "Ctrl + H")) { _plugin.IsMainUiVisible = false; }
-
-        if (ImGui.MenuItem("Deactivate Dear Dev Tools", "Ctrl + O")) { _plugin.IsActivated = false; }
     }
 
     protected virtual void ProcessShortcuts()
     {
         if (ImGui.Shortcut(ImGuiKey.F1, ImGuiInputFlags.RouteGlobal)) { } // TODO
+    }
+
+    private void MenuBarMenu()
+    {
+        if (ImGui.MenuItem("Bad menu")) { _menuManager.CreateNew<BadMenu>(); }
+
+        ImGui.Separator();
+
+        if (ImGui.MenuItem("Hide Dear Dev Tools UI", "Ctrl + H")) { _plugin.IsMainUiVisible = false; }
+
+        if (ImGui.MenuItem("Deactivate Dear Dev Tools", "Ctrl + O")) { _plugin.IsActivated = false; }
     }
 
     private void MenuBarHelp()
@@ -89,16 +95,12 @@ public class MainMenuBar : ImGuiDrawableBase
 
         ImGui.Separator();
 
+        ImGui.MenuItem("ImGui demo window", null, ref _demoWindowActive);
         ImGui.MenuItem("ImGui debug logs", null, ref _debugLogActive);
         ImGui.MenuItem("ImGui debug metrics", null, ref _debugMetricsActive);
 
         ImGui.Separator();
 
         if (ImGui.MenuItem("Escape the end", "Esc + End")) _endEscaperService.EscapeTheEnd();
-    }
-
-    private void MenuBarTools()
-    {
-        if (ImGui.MenuItem("Palette editor")) { } // TODO
     }
 }

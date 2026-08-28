@@ -29,7 +29,6 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     private EndEscaperService _endEscaperService = null!;
     private MenuManager _menuManager = null!;
     private ModImGuiContext _modImGuiContext = null!;
-
     private ServiceProvider _serviceProvider = null!;
 
     public DearDevToolsPlugin()
@@ -163,7 +162,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     [UsedImplicitly]
     private void OnEnable()
     {
-        Logger.LogInformation("OnEnable called, registering initialization callback");
+        Logger.LogDebug("OnEnable called, registering initialization callback");
 
         if (_skipOnModsInit) Initialize();
         else On.RainWorld.OnModsInit += OnModsInit;
@@ -172,7 +171,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     [UsedImplicitly]
     private void OnDisable()
     {
-        Logger.LogInformation("OnDisable called, deinitializing mod instance");
+        Logger.LogDebug("OnDisable called, deinitializing mod instance");
         Deinitialize();
     }
 
@@ -181,7 +180,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     /// </summary>
     public void Dispose()
     {
-        Logger.LogInformation("Dispose called, deinitializing mod instance");
+        Logger.LogDebug("Dispose called, deinitializing mod instance");
         Deinitialize();
     }
 
@@ -189,9 +188,13 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     {
         if (_instance == this) _instance = null;
 
+        Logger.LogInformation("Deinitializing mod instance");
+
         On.RainWorld.OnModsInit -= OnModsInit;
 
         _serviceProvider.Dispose();
+
+        Logger.LogInformation("Deinitialization complete. Goodbye!");
     }
 
     /// <summary>
@@ -247,7 +250,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
     public void RebuildServiceProvider()
     {
         // NOTE: multiple downstream dependents might call this method multiple times 
-        Logger.LogInformation("Rebuilding service provider");
+        Logger.LogDebug("Rebuilding service provider");
 
         var serviceCollection = new ServiceCollection();
 
@@ -293,14 +296,6 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 
         _menuManager.CreateNew<DearDevToolsEnabledOverlay>();
         _menuManager.CreateNew<MainMenuBar>();
-
-#if DEBUG
-        IsActivated = true;
-        IsMainUiVisible = true;
-#else
-            AreDearDevToolsActive = false;
-            IsMainUiVisible = false;
-#endif
     }
 
     private void ConfigureDefaults(ServiceCollection serviceCollection)
@@ -309,7 +304,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 #if DEBUG
         var minimumLogLevel = LogLevel.Trace;
 #else
-        var minimumLogLevel = LogLevel.Debug;
+        var minimumLogLevel = LogLevel.Information;
 #endif
 
         // no override allowed:
@@ -323,6 +318,7 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
         // override allowed:
         serviceCollection.TryAddSingleton<DearDevToolsEnabledOverlay>();
         serviceCollection.TryAddSingleton<MainMenuBar>();
+        serviceCollection.TryAddTransient<BadMenu>();
     }
 
     private void Initialize()
@@ -331,7 +327,18 @@ public sealed class DearDevToolsPlugin : BaseUnityPlugin, IDisposable
 
         Logger.LogInformation("Initializing mod instance");
 
-        try { RebuildServiceProvider(); }
+        try
+        {
+            RebuildServiceProvider();
+
+#if DEBUG
+            IsActivated = true;
+            IsMainUiVisible = true;
+#else
+            IsActivated = false;
+            IsMainUiVisible = false;
+#endif
+        }
         catch (Exception e)
         {
             Logger.LogCritical(e, "Fatal error during Dear Dev Tool initialization");

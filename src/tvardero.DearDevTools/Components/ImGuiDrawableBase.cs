@@ -8,7 +8,7 @@ namespace tvardero.DearDevTools.Components;
 [PublicAPI]
 public abstract class ImGuiDrawableBase : IDisposable
 {
-    protected ImGuiDrawableBase(ILogger? logger)
+    protected ImGuiDrawableBase(ILogger? logger = null)
     {
         InstancesCounter++;
         Logger = logger ?? NullLogger.Instance;
